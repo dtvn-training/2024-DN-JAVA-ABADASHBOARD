@@ -21,8 +21,8 @@ public class TemplateMaster {
     @Column(name = "template_id")
     Long template_id;
 
-    @Column(name = "key", columnDefinition = "TEXT")
-    String key;
+    @Column(name = "template_key")
+    private String templateKey;
 
     @Column(name = "type", columnDefinition = "TEXT")
     String type;

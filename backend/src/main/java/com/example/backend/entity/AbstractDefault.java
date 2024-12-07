@@ -1,42 +1,60 @@
 package com.example.backend.entity;
 
-import com.example.backend.enums.DeletedFlag;
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDateTime;
+import com.example.backend.enums.DeletedFlag;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 @MappedSuperclass
 @Getter
 @Setter
 public class AbstractDefault {
-    @CreationTimestamp
-    @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    LocalDateTime createdAt;
 
-    @UpdateTimestamp
-    @Column(name = "updated_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
-    LocalDateTime updatedAt;
+//    @CreatedDate
+//    @Column(nullable = false, updatable = false) // Created date is immutable
+//    private LocalDateTime createdAt;
+//
+//    @LastModifiedDate
+//    @Column(nullable = false) // Updated date changes on each update
+//    private LocalDateTime updatedAt;
 
-    @Column(name = "updated_by", columnDefinition = "TEXT DEFAULT ''")
-    String updatedBy;
 
-    @Column(name = "created_by", columnDefinition = "TEXT DEFAULT ''")
-    String createdBy;
+//
+//    @Column(name = "updated_at", nullable = false)
+//    private LocalDateTime updatedAt;
 
-    @Enumerated(EnumType.ORDINAL)
+    @Column(name = "updated_by")
+    private String updatedBy;
+
+    @Column(name = "created_by")
+    private String createdBy;
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "deleted_flag")
-    DeletedFlag deletedFlag;
+    private DeletedFlag deletedFlag;
 
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-    }
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
+//    @PrePersist
+//    protected void onCreate() {
+//        createdAt = LocalDateTime.now();
+//        updatedAt = LocalDateTime.now();
+//    }
+//
+//    @PreUpdate
+//    protected void onUpdate() {
+//        updatedAt = LocalDateTime.now();
+//    }
 }

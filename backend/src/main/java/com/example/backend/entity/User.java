@@ -20,7 +20,7 @@ public class User extends AbstractDefault {
     @Column(name = "user_id")
     Long userId;
 
-    @Column(name = "email", nullable = false, unique = true, columnDefinition = "TEXT")
+    @Column(name = "email", nullable = false, unique = true, length = 100)
     String email;
 
     @Column(name = "password", nullable = false, columnDefinition = "TEXT")

@@ -8,7 +8,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class listTagRequestGTM {
+public class ListTagRequestGTM {
     @NotBlank(message = "NOT_BLANK")
     String containerId;
 

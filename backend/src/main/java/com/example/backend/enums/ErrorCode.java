@@ -26,6 +26,7 @@ public enum ErrorCode {
     SCORE_MIN_1(2012, "Score value must be greater than or equal to 1", HttpStatus.BAD_REQUEST),
     SCORE_MAX_5(2013, "Score value must be less than or equal to 5", HttpStatus.BAD_REQUEST),
     POSITIVE_OR_ZERO(2014, "This field must be greater or equal to 0", HttpStatus.BAD_REQUEST),
+    BAD_REQUEST(2015, "Request error", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

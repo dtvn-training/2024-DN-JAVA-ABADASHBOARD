@@ -27,7 +27,7 @@ public class Keyword {
     String keywordText;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "match_type", columnDefinition = "ENUM('broad', 'phrase', 'exact')")
+    @Column(name = "match_type", columnDefinition = "varchar(255) default 'Exact'")
     MatchType matchType;
 
     @Column(name = "cpc_bid")
@@ -37,10 +37,10 @@ public class Keyword {
     Integer searchVolume;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "keyword_status", columnDefinition = "ENUM('active', 'inactive', 'paused')")
+    @Column(name = "keyword_status", nullable = false, columnDefinition = "varchar(255) default 'ACTIVE'")
     Status status;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ad_group_id", referencedColumnName = "ad_group_id")
+    @JoinColumn(name = "ad_group_id", referencedColumnName = "ad_group_id", nullable = false)
     AdsGroup adsGroup;
 }

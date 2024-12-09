@@ -12,7 +12,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Varriable{
+public class Varriable extends AbstractDefault {
     @Id
     @Column(name = "variable_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)

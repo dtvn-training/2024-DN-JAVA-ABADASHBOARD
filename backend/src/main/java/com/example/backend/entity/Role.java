@@ -21,7 +21,7 @@ public class Role {
     @Column(name = "role_id")
     Long role_id;
 
-    @Column(name = "role_name", columnDefinition = "TEXT")
+    @Column(name = "role_name", nullable = false)
     String roleName;
 
     @OneToMany(mappedBy = "role", cascade = CascadeType.ALL)

@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -31,11 +32,11 @@ public class Event {
     @Column(name = "event_value", nullable = false)
     String eventValue;
 
-//    @Column(name = "timestamp")
-//    Date timestamp;
+    @Column(name = "timestamp")
+    LocalDateTime timestamp;
 
-//    @Column(name = "update_at")
-//    Timestamp updateAt;
+    @Column(name = "update_at")
+    LocalDateTime updateAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "campaign_id", referencedColumnName = "campaign_id")

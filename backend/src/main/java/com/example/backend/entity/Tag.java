@@ -17,30 +17,30 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Tag extends AbstractDefault{
     @Id
-    @Column(name = "variable_id")
+    @Column(name = "tag_id")
     Long tagId;
 
-    @Column(name = "tag_name",columnDefinition = "TEXT")
+    @Column(name = "tag_name",nullable = false)
     String tagName;
 
-    @Column(name = "type")
+    @Column(name = "type",nullable = false)
     String type;
 
-    @Enumerated(EnumType.ORDINAL)
-    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status",nullable = false, columnDefinition = "varchar(20) default 'SAVE'")
     TagStatus status;
 
 
-    @Column(name = "account_id")
+    @Column(name = "account_id",nullable = false)
     String accountId;
 
-    @Column(name = "container_id")
+    @Column(name = "container_id",nullable = false)
     String containerId;
 
     @Column(name = "finger_print")
     String fingerPrint;
 
-    @Column(name = "workspace_id")
+    @Column(name = "workspace_id",nullable = false)
     String workspaceId;
 
     @Column(name = "tag_firing_option")

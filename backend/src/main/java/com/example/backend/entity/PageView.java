@@ -1,6 +1,7 @@
 package com.example.backend.entity;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 import jakarta.persistence.*;
@@ -33,11 +34,11 @@ public class PageView {
     @Column(name = "page_title", nullable = false)
     String pageTitle;
 
-//    @Column(name = "update_at")
-//    Timestamp updateAt;
-//
-//    @Column(name = "timestamp")
-//    Date timestamp;
+    @Column(name = "update_at")
+    LocalDateTime updateAt;
+
+    @Column(name = "timestamp")
+    LocalDateTime timestamp;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "campaign_id", referencedColumnName = "campaign_id")

@@ -21,21 +21,21 @@ public class TemplateMaster {
     @Column(name = "template_id")
     Long template_id;
 
-    @Column(name = "template_key")
+    @Column(name = "template_key", nullable = false)
     private String templateKey;
 
-    @Column(name = "type", columnDefinition = "TEXT")
+    @Column(name = "type", nullable = false)
     String type;
 
-    @Column(name = "value", columnDefinition = "TEXT")
+    @Column(name = "value", nullable = false)
     String value;
 
-    @ManyToMany
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(
             name = "db_tag_template",
             joinColumns = @JoinColumn(name = "template_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id"))
-    Set<Tag> tags ;
+    Set<Tag> tags;
 
     @ManyToMany(mappedBy = "templateMasters")
     Set<Trigger> triggers;

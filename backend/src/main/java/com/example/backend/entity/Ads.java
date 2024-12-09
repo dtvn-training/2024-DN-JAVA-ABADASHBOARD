@@ -5,27 +5,24 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Entity
-@Table(name = "db_folder")
+@Table(name = "db_ads")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Folder extends AbstractDefault{
+public class Ads {
 
     @Id
-    @Column(name = "folder_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long folderId;
+    @Column(name = "ads_id")
+    Long adsId;
 
-    @Column(name = "folder_name",nullable = false)
-    String variableName;
-
-    @Column(name = "value",nullable = false)
-    String value;
+    @Column(name = "ads_name", nullable = false)
+    String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "user_id")
-    User user;
+    @JoinColumn(name = "ad_group_id", referencedColumnName = "ad_group_id", nullable = false)
+    AdsGroup adsGroup;
 }

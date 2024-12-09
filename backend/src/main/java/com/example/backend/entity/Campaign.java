@@ -6,6 +6,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -30,17 +31,17 @@ public class Campaign {
     @Column(name = "budget", nullable = false)
     BigDecimal budget;
 
-//    @Column(name = "campaign_start_date")
-//    Date campaignStartDate;
-//
-//    @Column(name = "campaign_end_date")
-//    Date campaignEndDate;
+    @Column(name = "campaign_start_date")
+    LocalDateTime campaignStartDate;
+
+    @Column(name = "campaign_end_date")
+    LocalDateTime campaignEndDate;
 
     @Column(name = "target_audience")
     String targetAudience;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", columnDefinition = "ENUM('active', 'inactive', 'pending') DEFAULT 'active'")
+    @Column(name = "status", nullable = false, columnDefinition = "varchar(255) default 'ACTIVE'")
     Status status;
 
     @Column(name = "user_id")

@@ -27,7 +27,7 @@ public class AdsGroup {
     String adGroupName;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "ad_group_status", columnDefinition = "ENUM('active', 'inactive', 'paused')")
+    @Column(name = "ad_group_status",nullable = false, columnDefinition = "varchar(50) default 'ACTIVE'")
     Status status;
 
     @Column(name = "targeting_criteria")
@@ -37,9 +37,12 @@ public class AdsGroup {
     BigDecimal bidAmount;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "campaign_id", referencedColumnName = "campaign_id")
+    @JoinColumn(name = "campaign_id")
     Campaign campaign;
 
     @OneToMany(mappedBy = "adsGroup", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     List<Keyword> keywords;
+
+    @OneToMany(mappedBy = "adsGroup", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    List<Ads> ads;
 }

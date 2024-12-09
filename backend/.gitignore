@@ -32,4 +32,5 @@ build/
 ### VS Code ###
 .vscode/
 .env
-/src/main/resources/services-account.json
+
+src/main/resources/services-account.json

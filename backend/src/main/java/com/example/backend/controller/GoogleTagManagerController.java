@@ -2,12 +2,11 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.request.CreateTagRequest;
 import com.example.backend.dto.response.ApiResponse;
-import com.example.backend.service.GoogleTagManagerService.GoogleTagManagerService;
+import com.example.backend.service.GoogleTagManagerService.TagService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,10 +14,11 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class GoogleTagManagerController {
-    GoogleTagManagerService googleTagManagerService;
+    private final TagService tagService;
 
     @PostMapping("/create-tag")
     public ApiResponse<?> createTag(@Valid @RequestBody CreateTagRequest request) {
-        return googleTagManagerService.CreateTag(request.getTagName(), request.getTagType());
+        return tagService.CreateTag(request);
     }
+
 }

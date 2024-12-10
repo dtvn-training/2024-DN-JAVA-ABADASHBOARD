@@ -4,22 +4,24 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.util.List;
 import java.util.Set;
 
 @Entity
-@Table(name = "db_template_master")
+@Table(name = "db_parameter_master")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class TemplateMaster {
+public class ParameterMaster {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "template_id")
+    @Column(name = "parameter_id")
     Long template_id;
+
+    @Column(name = "parameter_key", nullable = false)
+    private String parameterKey;
 
     @Column(name = "type", nullable = false)
     String type;
@@ -30,7 +32,4 @@ public class TemplateMaster {
             joinColumns = @JoinColumn(name = "template_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id"))
     Set<Tag> tags;
-
-    @ManyToMany(mappedBy = "templateMasters")
-    Set<Trigger> triggers;
 }

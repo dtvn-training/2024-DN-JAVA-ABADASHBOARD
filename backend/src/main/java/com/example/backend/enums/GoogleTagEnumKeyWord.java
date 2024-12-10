@@ -6,7 +6,8 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum GoogleTagEnumKeyWord {
-    CONTAINER_NAME("abalightacademy.com");
+    CONTAINER_NAME("abalightacademy.com"),
+    TRACKING_ID("G-1DXQ4J3ERZ");
 
 
     private final String name;

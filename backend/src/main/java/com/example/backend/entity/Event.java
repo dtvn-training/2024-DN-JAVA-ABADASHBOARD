@@ -1,6 +1,8 @@
 package com.example.backend.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -16,7 +18,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Event {
+public class Event extends AbstractDefault{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,9 +28,11 @@ public class Event {
     @Column(name = "event_name", nullable = false, unique = true)
     String eventName;
 
-    @Column(name = "event_label", nullable = false)
+    @NotNull(message = "NOT_NULL")
+    @Column(name = "event_label")
     String eventLabel;
 
+    @NotBlank(message = "NOT_BLANK")
     @Column(name = "event_value", nullable = false)
     String eventValue;
 

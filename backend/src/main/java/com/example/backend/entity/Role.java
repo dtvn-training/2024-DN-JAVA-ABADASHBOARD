@@ -2,6 +2,7 @@ package com.example.backend.entity;
 
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -21,7 +22,8 @@ public class Role {
     @Column(name = "role_id")
     Long role_id;
 
-    @Column(name = "role_name", nullable = false)
+    @NotNull(message = "NOT_NULL")
+    @Column(name = "role_name")
     String roleName;
 
     @OneToMany(mappedBy = "role", cascade = CascadeType.ALL)

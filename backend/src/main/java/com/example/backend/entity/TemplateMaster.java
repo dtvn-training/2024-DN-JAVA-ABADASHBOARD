@@ -1,10 +1,10 @@
 package com.example.backend.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -21,13 +21,16 @@ public class TemplateMaster {
     @Column(name = "template_id")
     Long template_id;
 
-    @Column(name = "template_key", nullable = false)
+    @NotNull(message = "NOT_NULL")
+    @Column(name = "template_key")
     private String templateKey;
 
-    @Column(name = "type", nullable = false)
+    @NotNull(message = "NOT_NULL")
+    @Column(name = "type")
     String type;
 
-    @Column(name = "value", nullable = false)
+    @NotNull(message = "NOT_NULL")
+    @Column(name = "value")
     String value;
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})

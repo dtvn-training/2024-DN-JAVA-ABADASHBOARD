@@ -3,6 +3,8 @@ package com.example.backend.entity;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -28,8 +30,10 @@ public class AbstractDefault {
     @Column(name = "created_by")
     private String createdBy;
 
+    @Size(max = 10, message = "This field must be between 10 and 20 characters")
+    @NotNull(message ="NOT_NULL")
     @Enumerated(EnumType.STRING)
-    @Column(name = "deleted_flag",nullable = false, columnDefinition = "varchar(255) default 'ACTIVE'")
+    @Column(name = "deleted_flag", columnDefinition = "default 'ACTIVE'")
     private DeletedFlag deletedFlag;
 
     @PrePersist

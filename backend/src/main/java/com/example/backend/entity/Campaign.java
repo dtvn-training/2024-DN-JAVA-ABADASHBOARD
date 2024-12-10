@@ -2,8 +2,11 @@ package com.example.backend.entity;
 
 import com.example.backend.enums.Status;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.aspectj.bridge.IMessage;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -18,7 +21,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Campaign {
+public class Campaign extends AbstractDefault{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,10 +43,13 @@ public class Campaign {
     @Column(name = "target_audience")
     String targetAudience;
 
+    @NotNull(message = "NOT_NULL")
+    @Size(max = 10, message = "status cannot exceed 10 characters.")
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, columnDefinition = "varchar(255) default 'ACTIVE'")
+    @Column(name = "status", columnDefinition = "varchar(10) default 'ACTIVE'")
     Status status;
 
+    @NotNull(message = "NOT_NULL")
     @Column(name = "user_id")
     Long userId;
 

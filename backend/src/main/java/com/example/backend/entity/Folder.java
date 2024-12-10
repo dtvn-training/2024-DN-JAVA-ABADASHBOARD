@@ -1,6 +1,8 @@
 package com.example.backend.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -19,10 +21,12 @@ public class Folder extends AbstractDefault{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long folderId;
 
-    @Column(name = "folder_name",nullable = false)
+    @NotBlank(message = "NOT_BLANK")
+    @Column(name = "folder_name")
     String variableName;
 
-    @Column(name = "value",nullable = false)
+    @NotNull(message = "NOT_NULL")
+    @Column(name = "value")
     String value;
 
     @ManyToOne(fetch = FetchType.LAZY)

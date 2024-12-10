@@ -1,11 +1,10 @@
 package com.example.backend.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -23,34 +22,50 @@ public class Trigger extends AbstractDefault {
     @Column(name = "trigger_id")
     private Long triggerId;
 
-    @Column(name = "path", nullable = false, length = 255)
+    @NotNull(message = "NOT_NULL")
+    @Size(max = 255, message = "path cannot exceed 255 characters.")
+    @Column(name = "path")
     private String path;
 
-    @Column(name = "account_id", nullable = false, length = 20)
+    @NotNull(message = "NOT_NULL")
+    @Size(max = 20, message = "accountId cannot exceed 20 characters.")
+    @Column(name = "account_id")
     private String accountId;
 
-    @Column(name = "container_id", nullable = false, length = 20)
+    @NotNull(message = "NOT_NULL")
+    @Size(max = 20, message = "containerId cannot exceed 20 characters.")
+    @Column(name = "container_id")
     private String containerId;
 
-    @Column(name = "workspace_id", nullable = false, length = 20)
+    @NotNull(message = "NOT_NULL")
+    @Size(max = 20, message = "workspaceId cannot exceed 20 characters.")
+    @Column(name = "workspace_id")
     private String workspaceId;
 
-    @Column(name = "name", nullable = false, length = 10)
+    @NotBlank(message = "NOT_BLANK")
+    @Size(max = 20, message = "name cannot exceed 20 characters.")
+    @Column(name = "name")
     private String name;
 
-    @Column(name = "type", nullable = false, length = 50)
+    @NotNull(message = "NOT_NULL")
+    @Size(max = 50, message = "type cannot exceed 50 characters.")
+    @Column(name = "type")
     private String type;
 
-    @Column(name = "fingerprint", length = 255)
+    @Size(max = 255, message = "fingerprint cannot exceed 255 characters.")
+    @Column(name = "fingerprint")
     private String fingerprint;
 
-    @Column(name = "parent_folder_id", length = 255)
+    @Size(max = 20, message = "type cannot exceed 20 characters.")
+    @Column(name = "parent_folder_id")
     private String parentFolderId;
 
-    @Column(name = "tag_manager_url", length = 255)
+    @Size(min = 10 , max = 500, message = "tagManagerUrl must be between 10 and 500 characters")
+    @Column(name = "tag_manager_url")
     private String tagManagerUrl;
 
-    @Column(name = "notes", columnDefinition = "TEXT")
+    @Size(min = 10 , max = 500, message = "notes must be between 10 and 500 characters")
+    @Column(name = "notes")
     private String notes;
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})

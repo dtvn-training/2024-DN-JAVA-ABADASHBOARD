@@ -1,8 +1,11 @@
 package com.example.backend.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.validator.constraints.UniqueElements;
+
 import java.util.List;
 
 @Entity
@@ -20,10 +23,15 @@ public class User extends AbstractDefault {
     @Column(name = "user_id")
     Long userId;
 
-    @Column(name = "email", nullable = false, unique = true, length = 100)
+    @NotNull(message = "NOT_NULL")
+    @Size(max = 100, message = "email cannot exceed 100 characters.")
+    @UniqueElements(message = "email is unique")
+    @Column(name = "email")
     String email;
 
-    @Column(name = "password", nullable = false, columnDefinition = "TEXT")
+    @NotNull(message = "NOT_NULL")
+    @Size(min = 8 , max = 50, message = "password must be between 8 and 50 characters")
+    @Column(name = "password")
     String password;
 
     @ManyToOne(fetch = FetchType.LAZY)

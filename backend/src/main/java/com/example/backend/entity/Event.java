@@ -18,7 +18,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Event extends AbstractDefault{
+public class Event extends AbstractDefault {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,7 +29,7 @@ public class Event extends AbstractDefault{
     String eventName;
 
     @NotNull(message = "NOT_NULL")
-    @Column(name = "event_label")
+    @Column(name = "event_label", nullable = false)
     String eventLabel;
 
     @NotBlank(message = "NOT_BLANK")

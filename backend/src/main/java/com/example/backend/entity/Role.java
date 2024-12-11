@@ -1,6 +1,5 @@
 package com.example.backend.entity;
 
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -23,7 +22,7 @@ public class Role {
     Long role_id;
 
     @NotNull(message = "NOT_NULL")
-    @Column(name = "role_name")
+    @Column(name = "role_name", nullable = false)
     String roleName;
 
     @OneToMany(mappedBy = "role", cascade = CascadeType.ALL)

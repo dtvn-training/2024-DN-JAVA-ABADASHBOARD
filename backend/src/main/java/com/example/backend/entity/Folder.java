@@ -14,7 +14,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Folder extends AbstractDefault{
+public class Folder extends AbstractDefault {
 
     @Id
     @Column(name = "folder_id")
@@ -22,7 +22,7 @@ public class Folder extends AbstractDefault{
     Long folderId;
 
     @NotBlank(message = "NOT_BLANK")
-    @Column(name = "folder_name")
+    @Column(name = "folder_name", nullable = false)
     String variableName;
 
     @NotNull(message = "NOT_NULL")

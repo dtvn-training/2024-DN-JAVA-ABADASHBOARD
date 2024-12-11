@@ -21,11 +21,11 @@ public class Varriable extends AbstractDefault {
     Long variableId;
 
     @NotBlank(message = "NOT_BLANK")
-    @Column(name = "variable_name",columnDefinition = "TEXT")
+    @Column(name = "variable_name", nullable = false)
     String variableName;
 
     @NotNull(message = "NOT_NULL")
-    @Column(name = "value")
+    @Column(name = "value", nullable = false)
     String value;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -14,7 +14,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Ads extends AbstractDefault{
+public class Ads extends AbstractDefault {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,6 +25,7 @@ public class Ads extends AbstractDefault{
     @Column(name = "ads_name")
     String name;
 
+    @NotNull(message = "NOT_NULL")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ad_group_id", referencedColumnName = "ad_group_id", nullable = false)
     AdsGroup adsGroup;

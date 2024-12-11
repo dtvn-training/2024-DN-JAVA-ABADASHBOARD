@@ -18,20 +18,20 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class AdsGroup extends AbstractDefault{
+public class AdsGroup extends AbstractDefault {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ad_group_id")
     Long adGroupId;
 
-    @NotBlank(message ="NOT_BLANK")
+    @NotBlank(message = "NOT_BLANK")
     @Column(name = "ad_group_name")
     String adGroupName;
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "ad_group_status", columnDefinition = "varchar(50) default 'ACTIVE'")
+    @Column(name = "ad_group_status", nullable = false, columnDefinition = "varchar(50) default 'ACTIVE'")
     Status status;
 
     @Column(name = "targeting_criteria")

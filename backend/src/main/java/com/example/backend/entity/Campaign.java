@@ -2,6 +2,7 @@ package com.example.backend.entity;
 
 import com.example.backend.enums.Status;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -21,13 +22,14 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Campaign extends AbstractDefault{
+public class Campaign extends AbstractDefault {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "campaign_id")
     Long campaignId;
 
+    @NotBlank(message = "NOT_BLANK")
     @Column(name = "campaign_name", nullable = false)
     String campaignName;
 

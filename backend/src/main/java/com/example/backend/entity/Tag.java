@@ -15,22 +15,22 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Tag extends AbstractDefault{
+public class Tag extends AbstractDefault {
     @Id
     @Column(name = "tag_id")
     Long tagId;
 
     @NotBlank(message = "NOT_BLANK")
-    @Column(name = "tag_name")
+    @Column(name = "tag_name", nullable = false)
     String tagName;
 
     @NotNull(message = "NOT_NULL")
-    @Column(name = "type")
+    @Column(name = "type", nullable = false)
     String type;
 
     @NotNull(message = "NOT_NULL")
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", columnDefinition = "varchar(20) default 'SAVE'")
+    @Column(name = "status", nullable = false, columnDefinition = "varchar(20) default 'SAVE'")
     TagStatus status;
 
     @NotNull(message = "NOT_NULL")

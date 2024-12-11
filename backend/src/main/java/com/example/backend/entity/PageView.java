@@ -22,7 +22,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class PageView extends AbstractDefault{
+public class PageView extends AbstractDefault {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,11 +30,11 @@ public class PageView extends AbstractDefault{
     Long pageId;
 
     @NotNull(message = "NOT_NULL")
-    @Column(name = "url")
+    @Column(name = "url", nullable = false)
     String url;
 
     @NotBlank(message = "NOT_BLANK")
-    @Column(name = "page_title")
+    @Column(name = "page_title", nullable = false)
     String pageTitle;
 
     @Column(name = "update_at")

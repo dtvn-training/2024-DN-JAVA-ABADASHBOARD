@@ -18,7 +18,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Keyword extends AbstractDefault{
+public class Keyword extends AbstractDefault {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,7 +26,7 @@ public class Keyword extends AbstractDefault{
     Long keywordId;
 
     @NotNull(message = "NOT_NULL")
-    @Column(name = "keyword_text")
+    @Column(name = "keyword_text", nullable = false)
     String keywordText;
 
     @Enumerated(EnumType.STRING)
@@ -41,11 +41,11 @@ public class Keyword extends AbstractDefault{
 
     @NotNull(message = "NOT_NULL")
     @Enumerated(EnumType.STRING)
-    @Column(name = "keyword_status", columnDefinition = "varchar(10) default 'ACTIVE'")
+    @Column(name = "keyword_status", nullable = false, columnDefinition = "varchar(10) default 'ACTIVE'")
     Status status;
 
     @NotNull(message = "NOT_NULL")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ad_group_id", referencedColumnName = "ad_group_id")
+    @JoinColumn(name = "ad_group_id", nullable = false, referencedColumnName = "ad_group_id")
     AdsGroup adsGroup;
 }

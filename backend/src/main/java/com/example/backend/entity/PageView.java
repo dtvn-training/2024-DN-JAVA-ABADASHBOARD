@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.Date;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,16 +22,18 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class PageView {
+public class PageView extends AbstractDefault {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "page_id")
     Long pageId;
 
+    @NotNull(message = "NOT_NULL")
     @Column(name = "url", nullable = false)
     String url;
 
+    @NotBlank(message = "NOT_BLANK")
     @Column(name = "page_title", nullable = false)
     String pageTitle;
 

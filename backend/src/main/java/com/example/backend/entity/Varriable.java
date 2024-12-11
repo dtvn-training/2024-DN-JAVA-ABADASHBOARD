@@ -1,6 +1,8 @@
 package com.example.backend.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -18,10 +20,12 @@ public class Varriable extends AbstractDefault {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long variableId;
 
-    @Column(name = "variable_name",columnDefinition = "TEXT")
+    @NotBlank(message = "NOT_BLANK")
+    @Column(name = "variable_name", nullable = false)
     String variableName;
 
-    @Column(name = "value")
+    @NotNull(message = "NOT_NULL")
+    @Column(name = "value", nullable = false)
     String value;
 
     @ManyToOne(fetch = FetchType.LAZY)

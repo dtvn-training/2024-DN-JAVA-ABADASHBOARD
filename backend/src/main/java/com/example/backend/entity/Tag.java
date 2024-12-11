@@ -2,9 +2,9 @@ package com.example.backend.entity;
 
 import com.example.backend.enums.TagStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -15,32 +15,37 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Tag extends AbstractDefault{
+public class Tag extends AbstractDefault {
     @Id
     @Column(name = "tag_id")
     Long tagId;
 
-    @Column(name = "tag_name",nullable = false)
+    @NotBlank(message = "NOT_BLANK")
+    @Column(name = "tag_name", nullable = false)
     String tagName;
 
-    @Column(name = "type",nullable = false)
+    @NotNull(message = "NOT_NULL")
+    @Column(name = "type", nullable = false)
     String type;
 
+    @NotNull(message = "NOT_NULL")
     @Enumerated(EnumType.STRING)
-    @Column(name = "status",nullable = false, columnDefinition = "varchar(20) default 'SAVE'")
+    @Column(name = "status", nullable = false, columnDefinition = "varchar(20) default 'SAVE'")
     TagStatus status;
 
-
-    @Column(name = "account_id",nullable = false)
+    @NotNull(message = "NOT_NULL")
+    @Column(name = "account_id")
     String accountId;
 
-    @Column(name = "container_id",nullable = false)
+    @NotNull(message = "NOT_NULL")
+    @Column(name = "container_id")
     String containerId;
 
     @Column(name = "finger_print")
     String fingerPrint;
 
-    @Column(name = "workspace_id",nullable = false)
+    @NotNull(message = "NOT_NULL")
+    @Column(name = "workspace_id")
     String workspaceId;
 
     @Column(name = "tag_firing_option")

@@ -2,15 +2,12 @@ package com.example.backend.dto.response;
 
 import lombok.*;
 
-import java.util.List;
-
 @Getter
 @Setter
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ApiResponse<T> {
+@Builder
+public class ErrorResponse {
     private int code;
     private String message;
-    private List<T> data;
 }

@@ -1,21 +1,21 @@
 package com.example.backend.dto.response;
 
 import com.example.backend.dto.ParameterDto;
+import com.google.api.services.tagmanager.model.TagConsentSetting;
 import lombok.*;
 
 import java.util.List;
-import java.util.Objects;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CreateTagResponse{
+public class TagResponse {
     private String accountId;
     private String containerId;
     private String workspaceId;
-    private Objects consentSettings;
+    private TagConsentSetting consentSettings;
     private String consentStatus;
     private String fingerprint;
     private String name;

@@ -1,10 +1,10 @@
 package com.example.backend.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -21,6 +21,7 @@ public class TemplateMaster {
     @Column(name = "template_id")
     Long template_id;
 
+    @NotNull(message = "NOT_NULL")
     @Column(name = "type", nullable = false)
     String type;
 

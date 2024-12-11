@@ -30,7 +30,7 @@ public class ParameterMaster {
     @Column(name = "type", nullable = false)
     String type;
 
-//    @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH })
-//    @JoinTable(name = "db_tag_template", joinColumns = @JoinColumn(name = "template_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
-//    Set<Tag> tags;
+    @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH })
+    @JoinTable(name = "db_tag_template", joinColumns = @JoinColumn(name = "template_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    Set<Tag> tags;
 }

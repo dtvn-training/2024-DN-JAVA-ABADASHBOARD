@@ -1,11 +1,15 @@
 package com.example.backend.mapper;
 
 import com.example.backend.dto.ParameterDto;
+import com.example.backend.entity.ParameterMaster;
+
 import org.mapstruct.Mapper;
 
-import java.lang.reflect.Parameter;
+import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface ParameterMapper {
-    ParameterDto toParameterDto(Parameter parameter);
+    ParameterDto toParameterDto(ParameterMaster parameterMaster);
+
+    List<ParameterDto> toParameterDtoList(List<ParameterMaster> parameterMasters);
 }

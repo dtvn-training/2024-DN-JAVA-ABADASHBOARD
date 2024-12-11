@@ -62,5 +62,8 @@ public class Tag extends AbstractDefault {
     Set<TemplateMaster> templateMasters;
 
     @ManyToMany(mappedBy = "tags")
+    Set<ParameterMaster> parameterMasters;
+
+    @ManyToMany(mappedBy = "tags")
     Set<Trigger> triggers;
 }

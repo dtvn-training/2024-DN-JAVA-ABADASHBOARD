@@ -2,6 +2,7 @@ package com.example.backend.service.GoogleTagManagerService.Impl;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.example.backend.dto.response.TagResponse;
 import com.example.backend.mapper.TagMapper;
@@ -47,7 +48,7 @@ public  class TagServiceImpl implements TagService {
     public List<TagResponse> listTags() {
             return tagRepository.findAll().stream()
                     .map(tagMapper::toTagResponse)
-                    .toList();
+                    .collect(Collectors.toList());
     }
 
 }

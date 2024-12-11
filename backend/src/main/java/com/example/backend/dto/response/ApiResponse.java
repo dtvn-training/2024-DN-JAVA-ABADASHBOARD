@@ -2,11 +2,10 @@ package com.example.backend.dto.response;
 
 import java.util.List;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class ApiResponse<T> {
@@ -14,3 +13,4 @@ public class ApiResponse<T> {
     private String message;
     private List<T> data;
 }
+

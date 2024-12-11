@@ -114,6 +114,12 @@
 			<artifactId>google-oauth-client-jetty</artifactId>
 			<version>1.36.0</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.mapstruct/mapstruct -->
+		<dependency>
+			<groupId>org.mapstruct</groupId>
+			<artifactId>mapstruct</artifactId>
+			<version>1.6.3</version>
+		</dependency>
 
 	</dependencies>
 

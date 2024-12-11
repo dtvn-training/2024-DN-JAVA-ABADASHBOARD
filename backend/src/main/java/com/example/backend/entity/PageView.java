@@ -22,7 +22,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class PageView extends AbstractDefault {
+public class PageView  {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

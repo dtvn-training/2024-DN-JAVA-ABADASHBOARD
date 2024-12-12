@@ -29,7 +29,7 @@ public class Campaign extends AbstractDefault {
     @Column(name = "campaign_id")
     Long campaignId;
 
-    @NotBlank(message = "NOT_BLANK")
+    @NotBlank(message = "campaignName cannot be blank")
     @Column(name = "campaign_name", nullable = false)
     String campaignName;
 
@@ -45,13 +45,13 @@ public class Campaign extends AbstractDefault {
     @Column(name = "target_audience")
     String targetAudience;
 
-    @NotNull(message = "NOT_NULL")
+    @NotNull(message = "status cannot be null")
     @Size(max = 10, message = "status cannot exceed 10 characters.")
     @Enumerated(EnumType.STRING)
     @Column(name = "status", columnDefinition = "varchar(10) default 'ACTIVE'")
     Status status;
 
-    @NotNull(message = "NOT_NULL")
+    @NotNull(message = "userId cannot be null")
     @Column(name = "user_id")
     Long userId;
 

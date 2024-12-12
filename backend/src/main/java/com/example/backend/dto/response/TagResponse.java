@@ -10,6 +10,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@ToString
 public class TagResponse {
     private Long tagId;
     private String tagName;
@@ -21,4 +22,6 @@ public class TagResponse {
     private String tagFiringOption;
     private String monitoringMetadata;
     private List<ParameterDto> parameters;
+
+
 }

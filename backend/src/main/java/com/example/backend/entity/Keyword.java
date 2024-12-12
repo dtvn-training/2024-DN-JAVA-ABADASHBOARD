@@ -25,7 +25,7 @@ public class Keyword extends AbstractDefault {
     @Column(name = "keyword_id")
     Long keywordId;
 
-    @NotNull(message = "NOT_NULL")
+    @NotNull(message = "keywordText cannot be null")
     @Column(name = "keyword_text", nullable = false)
     String keywordText;
 
@@ -39,12 +39,12 @@ public class Keyword extends AbstractDefault {
     @Column(name = "search_volume")
     Integer searchVolume;
 
-    @NotNull(message = "NOT_NULL")
+    @NotNull(message = "status cannot be null")
     @Enumerated(EnumType.STRING)
     @Column(name = "keyword_status", nullable = false, columnDefinition = "varchar(10) default 'ACTIVE'")
     Status status;
 
-    @NotNull(message = "NOT_NULL")
+    @NotNull(message = "adsGroup cannot be null")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ad_group_id", nullable = false, referencedColumnName = "ad_group_id")
     AdsGroup adsGroup;

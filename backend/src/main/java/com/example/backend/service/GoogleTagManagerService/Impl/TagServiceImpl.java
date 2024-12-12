@@ -18,9 +18,11 @@ import com.google.api.services.tagmanager.model.Tag;
 
 import lombok.RequiredArgsConstructor;
 
+import javax.sql.DataSource;
+
 @Service
 @RequiredArgsConstructor
-public  class TagServiceImpl implements TagService {
+public class TagServiceImpl implements TagService {
 
     @Value("${google-tag-manager.account_id}")
     private String accountId;
@@ -28,9 +30,11 @@ public  class TagServiceImpl implements TagService {
     private final TagManager tagManager;
     private final TagRepository tagRepository;
     private final TagMapper tagMapper;
+    private final DataSource dataSource;
 
     @Override
     public List<Tag> listTagGTM(ListTagRequestGTM requestGTM) throws IOException {
+        // Fetch tags from Google Tag Manager based on the provided container and workspace IDs.
         String parent = String.format("accounts/%s/containers/%s/workspaces/%s", accountId, requestGTM.getContainerId(),
                 requestGTM.getWorkspaceId());
         TagManager.Accounts.Containers.Workspaces.Tags.List request = tagManager.accounts().containers().workspaces()
@@ -46,9 +50,10 @@ public  class TagServiceImpl implements TagService {
 
     @Override
     public List<TagResponse> listTags() {
-            return tagRepository.findAll().stream()
-                    .map(tagMapper::toTagResponse)
-                    .collect(Collectors.toList());
+        // Retrieve all tags from the local database and map them to TagResponse DTOs.
+        return tagRepository.findAll().stream()
+                .map(tagMapper::toTagResponse)
+                .collect(Collectors.toList());
     }
 
 }

@@ -21,7 +21,7 @@ public class Role {
     @Column(name = "role_id")
     Long role_id;
 
-    @NotNull(message = "NOT_NULL")
+    @NotBlank(message = "roleName cannot be blank")
     @Column(name = "role_name", nullable = false)
     String roleName;
 

@@ -25,11 +25,11 @@ public class AdsGroup extends AbstractDefault {
     @Column(name = "ad_group_id")
     Long adGroupId;
 
-    @NotBlank(message = "NOT_BLANK")
+    @NotBlank(message = "adGroupName cannot be blank")
     @Column(name = "ad_group_name")
     String adGroupName;
 
-    @NotNull
+    @NotNull(message = "status cannot be null")
     @Enumerated(EnumType.STRING)
     @Column(name = "ad_group_status", nullable = false, columnDefinition = "varchar(50) default 'ACTIVE'")
     Status status;

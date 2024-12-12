@@ -22,18 +22,18 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class PageView  {
+public class PageView extends AbstractDefault {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "page_id")
     Long pageId;
 
-    @NotNull(message = "NOT_NULL")
+    @NotNull(message = "url cannot be null")
     @Column(name = "url", nullable = false)
     String url;
 
-    @NotBlank(message = "NOT_BLANK")
+    @NotBlank(message = "pageTitle cannot be blank")
     @Column(name = "page_title", nullable = false)
     String pageTitle;
 

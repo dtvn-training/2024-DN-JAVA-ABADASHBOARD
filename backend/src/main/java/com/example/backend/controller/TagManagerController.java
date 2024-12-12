@@ -45,6 +45,7 @@ public class TagManagerController {
         try {
             List<TagResponse> tagResponses = tagService.listTags();
             return ApiResponse.<List<TagResponse>>builder()
+                    .message("success")
                     .data(tagResponses)
                     .build();
         } catch (Exception e) {

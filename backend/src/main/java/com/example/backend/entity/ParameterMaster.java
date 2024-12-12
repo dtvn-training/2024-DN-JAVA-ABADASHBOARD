@@ -9,6 +9,7 @@ import lombok.experimental.FieldDefaults;
 import java.util.Set;
 
 @Entity
+@ToString
 @Table(name = "db_parameter_master")
 @Getter
 @Setter
@@ -20,17 +21,16 @@ public class ParameterMaster {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "parameter_id")
-    Long template_id;
+    Long parameter_id;
 
-    @NotBlank(message = "NOT_BLANK")
+    @NotBlank(message = "key cannot be blank")
     @Column(name = "parameter_key", nullable = false)
-    private String parameterKey;
+    String key;
 
-    @NotNull(message = "NOT_NULL")
+    @NotNull(message = "type cannot be null")
     @Column(name = "type", nullable = false)
     String type;
 
-    @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH })
-    @JoinTable(name = "db_tag_template", joinColumns = @JoinColumn(name = "template_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    @ManyToMany(mappedBy = "parameterMasters")
     Set<Tag> tags;
 }

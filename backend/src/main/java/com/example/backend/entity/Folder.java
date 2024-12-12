@@ -21,11 +21,11 @@ public class Folder extends AbstractDefault {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long folderId;
 
-    @NotBlank(message = "NOT_BLANK")
+    @NotBlank(message = "variableName cannot be blank")
     @Column(name = "folder_name", nullable = false)
     String variableName;
 
-    @NotNull(message = "NOT_NULL")
+    @NotNull(message = "value cannot be null")
     @Column(name = "value")
     String value;
 

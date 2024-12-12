@@ -39,7 +39,7 @@ public class User extends AbstractDefault {
     Role role;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    List<Varriable> variables;
+    List<Variable> variables;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     List<Folder> folders;

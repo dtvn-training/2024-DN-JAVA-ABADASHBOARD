@@ -8,6 +8,7 @@ import lombok.experimental.FieldDefaults;
 import java.util.Set;
 
 @Entity
+@ToString
 @Table(name = "db_template_master")
 @Getter
 @Setter
@@ -21,22 +22,11 @@ public class TemplateMaster {
     @Column(name = "template_id")
     Long template_id;
 
-    @NotNull(message = "NOT_NULL")
-    @Column(name = "template_key", nullable = false)
-    private String templateKey;
-
-    @NotNull(message = "NOT_NULL")
+    @NotNull(message = "type cannot be null")
     @Column(name = "type", nullable = false)
     String type;
 
-    @NotNull(message = "NOT_NULL")
-    @Column(name = "value", nullable = false)
-    String value;
-
-    @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH })
-    @JoinTable(name = "db_tag_template", joinColumns = @JoinColumn(name = "template_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    @ManyToMany(mappedBy = "templateMasters")
     Set<Tag> tags;
 
-    @ManyToMany(mappedBy = "templateMasters")
-    Set<Trigger> triggers;
 }

@@ -28,11 +28,11 @@ public class Event extends AbstractDefault {
     @Column(name = "event_name", nullable = false, unique = true)
     String eventName;
 
-    @NotNull(message = "NOT_NULL")
+    @NotNull(message = "eventLabel cannot be null")
     @Column(name = "event_label", nullable = false)
     String eventLabel;
 
-    @NotBlank(message = "NOT_BLANK")
+    @NotBlank(message = "eventValue cannot be blank")
     @Column(name = "event_value", nullable = false)
     String eventValue;
 

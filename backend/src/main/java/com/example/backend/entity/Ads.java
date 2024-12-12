@@ -21,11 +21,11 @@ public class Ads extends AbstractDefault {
     @Column(name = "ads_id")
     Long adsId;
 
-    @NotBlank(message = "NOT_BLANK")
+    @NotBlank(message = "name cannot be blank")
     @Column(name = "ads_name")
     String name;
 
-    @NotNull(message = "NOT_NULL")
+    @NotNull(message = "adsGroup cannot be null")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ad_group_id", referencedColumnName = "ad_group_id", nullable = false)
     AdsGroup adsGroup;

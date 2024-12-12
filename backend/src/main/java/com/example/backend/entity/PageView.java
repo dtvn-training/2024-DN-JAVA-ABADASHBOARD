@@ -29,11 +29,11 @@ public class PageView extends AbstractDefault {
     @Column(name = "page_id")
     Long pageId;
 
-    @NotNull(message = "NOT_NULL")
+    @NotNull(message = "url cannot be null")
     @Column(name = "url", nullable = false)
     String url;
 
-    @NotBlank(message = "NOT_BLANK")
+    @NotBlank(message = "pageTitle cannot be blank")
     @Column(name = "page_title", nullable = false)
     String pageTitle;
 

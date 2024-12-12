@@ -1,18 +1,23 @@
 package com.example.backend.service.GoogleTagManagerService.Impl;
 
 import com.example.backend.dto.ParameterDto;
+import com.example.backend.dto.TagDto;
 import com.example.backend.dto.request.CreateTagRequest;
 import com.example.backend.dto.request.ParameterRequest;
 import com.example.backend.dto.response.ApiResponse;
 import com.example.backend.dto.response.TagResponse;
 import com.example.backend.entity.ParameterMaster;
 import com.example.backend.entity.TemplateMaster;
+import com.example.backend.entity.Trigger;
+import com.example.backend.enums.DeletedFlag;
 import com.example.backend.enums.ErrorCode;
 import com.example.backend.enums.TagStatus;
 import com.example.backend.exception.ApiException;
+import com.example.backend.mapper.TagMapper;
 import com.example.backend.repository.ParameterMasterRepository;
 import com.example.backend.repository.TagRepository;
 import com.example.backend.repository.TemplateMasterRepository;
+import com.example.backend.repository.TriggerRepository;
 import com.example.backend.service.GoogleTagManagerService.TagService;
 import com.google.api.services.tagmanager.TagManager;
 import com.google.api.services.tagmanager.model.Parameter;
@@ -34,9 +39,11 @@ public class TagServiceImpl implements TagService {
     private final TemplateMasterRepository templateMasterRepository;
     private final ParameterMasterRepository parameterMasterRepository;
     private final TagRepository tagRepository;
+    private final TagMapper tagMapper;
+    private final TriggerRepository triggerRepository;
 
 
-    private TagResponse covertTagToTagResponse(Tag tag) {
+    private TagResponse covertTagToTagResponse(Tag tag,CreateTagRequest request) {
         List<ParameterDto> parameterDtos = new ArrayList<>();
         for(Parameter parameter: tag.getParameter()){
             ParameterDto parameterDto= ParameterDto.builder()
@@ -46,10 +53,10 @@ public class TagServiceImpl implements TagService {
             parameterDtos.add(parameterDto);
         }
         return TagResponse.builder()
-                .tagId(tag.getTagId())
-                .accountId(tag.getAccountId())
-                .containerId(tag.getContainerId())
-                .workspaceId(tag.getWorkspaceId())
+                .tagGtmId(tag.getTagId())
+                .accountId(tag.getAccountId()!=null?tag.getAccountId():accountId)
+                .containerId(tag.getContainerId()!=null?tag.getContainerId():request.getContainerId())
+                .workspaceId(tag.getWorkspaceId()!=null?tag.getWorkspaceId():request.getWorkspaceId())
                 .consentSettings(tag.getConsentSettings())
                 .tagManagerUrl(tag.getTagManagerUrl())
                 .fingerprint(tag.getFingerprint())
@@ -60,7 +67,7 @@ public class TagServiceImpl implements TagService {
                 .build();
     }
 
-    private <T> ApiResponse<T> createResponse(Class<T> clazz, int code, String message, List<T> data) {
+    private <T> ApiResponse<T> createResponse(Class<T> clazz, int code, String message, T data) {
         ApiResponse<T> response = new ApiResponse<>();
         response.setCode(code);
         response.setMessage(message);
@@ -68,19 +75,11 @@ public class TagServiceImpl implements TagService {
         return response;
     }
 
-    private void saveTag(Tag tag, TemplateMaster templateMaster, CreateTagRequest request){
-        Set<ParameterMaster> parameterMasters= new LinkedHashSet<>();
+    private com.example.backend.entity.Tag saveTag(Tag tag,CreateTagRequest request, TemplateMaster templateMaster,Set<ParameterMaster> parameterMasters){
         Set<TemplateMaster> templateMasterSet = new LinkedHashSet<>();
-        for (Parameter parameter: tag.getParameter()){
-            ParameterMaster parameterMaster= ParameterMaster.builder()
-                    .parameterKey(parameter.getKey())
-                    .type(parameter.getType())
-                    .build();
-            parameterMasters.add(parameterMaster);
-        }
         templateMasterSet.add(templateMaster);
         com.example.backend.entity.Tag entity= com.example.backend.entity.Tag.builder()
-                .tagId(tag.getTagId()!=null?Long.parseLong(tag.getTagId()):null)
+                .tagGtmId(tag.getTagId())
                 .accountId(tag.getAccountId()!=null?tag.getAccountId():accountId)
                 .containerId(tag.getContainerId()!=null?tag.getContainerId(): request.getContainerId())
                 .workspaceId(tag.getWorkspaceId()!=null?tag.getWorkspaceId(): request.getWorkspaceId())
@@ -92,7 +91,9 @@ public class TagServiceImpl implements TagService {
                 .templateMasters(templateMasterSet)
                 .status(request.getStatus())
                 .build();
-        tagRepository.save(entity);
+        entity.setDeletedFlag(DeletedFlag.ACTIVE);
+        entity.setCreatedBy("Hieu");
+        return tagRepository.save(entity);
     }
 
     @Override
@@ -101,6 +102,10 @@ public class TagServiceImpl implements TagService {
             throw new ApiException(ErrorCode.BAD_REQUEST.getCode(), "Tag name or tag type cannot be null or empty");
         }
         try {
+            Optional<com.example.backend.entity.Tag> findTagNameIsExist= tagRepository.findByTagName(request.getTagName());
+            if(findTagNameIsExist.isPresent()){
+                throw new ApiException(ErrorCode.CREATE_TAG_EXIST.getCode(), ErrorCode.CREATE_TAG_EXIST.getMessage());
+            }
             Optional<TemplateMaster> findTemplateByType= templateMasterRepository.findByType(request.getTagType());
             if(findTemplateByType.isEmpty()){
                 throw new ApiException(ErrorCode.BAD_REQUEST.getCode(), "Template type " + request.getTagType() + " does not exist");
@@ -109,13 +114,17 @@ public class TagServiceImpl implements TagService {
             String parent = String.format("accounts/%s/containers/%s/workspaces/%s", accountId, request.getContainerId(),request.getWorkspaceId());
             Tag tag = new Tag();
             tag.setName(request.getTagName());
-            tag.setType(templateMaster.getType());
-            List<Parameter> parameters= new ArrayList<>();
+            tag.setType(templateMaster.getType()); List<Parameter> parameters= new ArrayList<>();
+            Set<ParameterMaster> parameterMasters= new LinkedHashSet<>();
             for(ParameterRequest paraStr : request.getParameters()){
                 try{
                     Optional<ParameterMaster> findParameterByKey= parameterMasterRepository.findByParameterKey(paraStr.getKey());
+                    if(findParameterByKey.isEmpty()){
+                        throw new ApiException(ErrorCode.BAD_REQUEST.getCode(), "Parameter key " + paraStr + " does not exist");
+                    }
                     Parameter parameter = getParameter(paraStr, findParameterByKey);
                     parameters.add(parameter);
+                    parameterMasters.add(findParameterByKey.get());
                 }catch (Exception e){
                     throw new ApiException(ErrorCode.BAD_REQUEST.getCode(), e.getMessage());
                 }
@@ -126,12 +135,28 @@ public class TagServiceImpl implements TagService {
             if(TagStatus.SAVE_AND_PUSH.equals(request.getStatus())){
                 tag= tagManager.accounts().containers().workspaces().tags().create(parent,tag).execute();
             }
-            saveTag(tag, templateMaster, request);
-            TagResponse convertCreateTagRes= covertTagToTagResponse(tag);
-            List<TagResponse> createTagResponses= List.of(convertCreateTagRes);
-            return createResponse(TagResponse.class, 200, "Create tag success", createTagResponses);
+            com.example.backend.entity.Tag tagEntity=saveTag(tag,request, templateMaster, parameterMasters);
+            TagResponse convertCreateTagRes= covertTagToTagResponse(tag,request);
+            convertCreateTagRes.setTagId(tagEntity.getTagId());
+            return createResponse(TagResponse.class, 200, "Create tag success", convertCreateTagRes);
         } catch (Exception e) {
             throw new ApiException(ErrorCode.BAD_REQUEST.getCode(), e.getMessage());
+        }
+    }
+
+    @Override
+    public ApiResponse<?> updatePushTagOnGTM(TagDto tagDto) {
+        try{
+            Optional<com.example.backend.entity.Tag> findTagExist= tagRepository.findByTagName(tagDto.getTagName());
+            if(findTagExist.isPresent()){
+                com.example.backend.entity.Tag updateTag= findTagExist.get();
+                updateTag= tagMapper.mapToEntity(tagDto);
+                Set<Trigger> filterTrigger= updateTag.getTriggers();
+
+            }
+            return null;
+        }catch (Exception e){
+            throw new ApiException(ErrorCode.INTERNAL_SERVER_ERROR.getCode(), e.getMessage());
         }
     }
 

@@ -12,6 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class TagResponse {
+    private Long tagId;
     private String accountId;
     private String containerId;
     private String workspaceId;
@@ -20,7 +21,7 @@ public class TagResponse {
     private String fingerprint;
     private String name;
     private String path;
-    private String tagId;
+    private String tagGtmId;
     private String tagManagerUrl;
     private String type;
     private List<ParameterDto> parameters;

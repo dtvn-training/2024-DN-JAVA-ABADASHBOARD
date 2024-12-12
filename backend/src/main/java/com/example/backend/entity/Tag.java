@@ -18,10 +18,14 @@ import java.util.Set;
 public class Tag extends AbstractDefault {
     @Id
     @Column(name = "tag_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long tagId;
 
+    @Column(name = "tag_gtm_id", length = 20,unique = true)
+    String tagGtmId;
+
     @NotBlank(message = "NOT_BLANK")
-    @Column(name = "tag_name", nullable = false)
+    @Column(name = "tag_name", nullable = false, unique = true)
     String tagName;
 
     @NotNull(message = "NOT_NULL")
@@ -58,12 +62,23 @@ public class Tag extends AbstractDefault {
     @JoinColumn(name = "user_id", referencedColumnName = "user_id")
     User user;
 
-    @ManyToMany(mappedBy = "tags")
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinTable(
+            name = "db_tag_template",
+            joinColumns = @JoinColumn(name = "tag_id"),
+            inverseJoinColumns = @JoinColumn(name = "template_id")
+    )
     Set<TemplateMaster> templateMasters;
 
-    @ManyToMany(mappedBy = "tags")
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinTable(
+            name = "db_tag_parameter",
+            joinColumns = @JoinColumn(name = "tag_id"),
+            inverseJoinColumns = @JoinColumn(name = "parameter_id")
+    )
     Set<ParameterMaster> parameterMasters;
 
-    @ManyToMany(mappedBy = "tags")
+    @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH })
+    @JoinTable(name = "db_tag_trigger", joinColumns = @JoinColumn(name = "tag_id"), inverseJoinColumns = @JoinColumn(name = "trigger_id"))
     Set<Trigger> triggers;
 }

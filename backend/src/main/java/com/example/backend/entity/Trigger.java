@@ -5,6 +5,7 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -42,6 +43,10 @@ public class Trigger extends AbstractDefault {
         @Column(name = "workspace_id", nullable = false)
         private String workspaceId;
 
+        @Size(max = 20, message = "trigger gtm id cannot exceed 20 characters.")
+        @Column(name = "trigger_gtm_id", nullable = false)
+        private String triggerGTMId;
+
         @NotBlank(message = "NOT_BLANK")
         @Size(max = 20, message = "name cannot exceed 20 characters.")
         @Column(name = "name", nullable = false)
@@ -68,12 +73,15 @@ public class Trigger extends AbstractDefault {
         @Column(name = "notes")
         private String notes;
 
-        @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH })
-        @JoinTable(name = "db_tag_trigger", joinColumns = @JoinColumn(name = "trigger_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
+        @ManyToMany(mappedBy = "triggers")
         Set<Tag> tags;
 
-        @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH })
-        @JoinTable(name = "db_trigger_template", joinColumns = @JoinColumn(name = "trigger_id"), inverseJoinColumns = @JoinColumn(name = "template_id"))
-        Set<TemplateMaster> templateMasters;
+        @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+        @JoinTable(
+                name = "db_trigger_trigerTemplate",
+                joinColumns = @JoinColumn(name = "trigger_id"),
+                inverseJoinColumns = @JoinColumn(name = "trigger_template_id")
+        )
+        Set<TriggerTemplate> triggerTemplates;
 
 }

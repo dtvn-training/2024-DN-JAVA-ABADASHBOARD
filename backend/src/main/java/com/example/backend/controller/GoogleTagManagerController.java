@@ -24,7 +24,6 @@ public class GoogleTagManagerController {
 
     @PostMapping("/create-tag")
     public ApiResponse<TagResponse> createTag(@Valid @RequestBody CreateTagRequest request) {
-//        return null;
         return tagService.CreateTag(request);
     }
 }

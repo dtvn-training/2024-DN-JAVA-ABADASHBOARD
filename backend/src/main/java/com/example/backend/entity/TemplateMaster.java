@@ -25,13 +25,7 @@ public class TemplateMaster {
     @Column(name = "type", nullable = false)
     String type;
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinTable(
-            name = "db_tag_template",
-            joinColumns = @JoinColumn(name = "template_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    @ManyToMany(mappedBy = "templateMasters")
     Set<Tag> tags;
 
-    @ManyToMany(mappedBy = "templateMasters")
-    Set<Trigger> triggers;
 }

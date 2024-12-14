@@ -57,16 +57,9 @@ public class TagServiceImpl implements TagService {
     @Override
     public PageResponse<TagResponse> listTags(int page, int size) {
         // Create a Pageable object for pagination
-        Pageable pageable = PageRequest.of(page - 1, size); // Convert to zero-based index
-        Page<Tag> tagPage = tagRepository.findAll(pageable); // Fetch paginated tags from the local database
-        tagPage.getContent().forEach(tag -> {
-            System.out.println("Tag ID: " + tag.getTagId());
-            System.out.println("Created At: " + tag.getCreatedAt());
-            System.out.println("Updated At: " + tag.getUpdatedAt());
-            System.out.println("Created By: " + tag.getCreatedBy());
-            System.out.println("Updated By: " + tag.getUpdatedBy());
-            System.out.println("Deleted Flag: " + tag.getDeletedFlag());
-        });
+        Pageable pageable = PageRequest.of(page - 1, size);
+        Page<Tag> tagPage = tagRepository.findAll(pageable);
+
         // Map the Tag entities to TagResponse DTOs
         List<TagResponse> tagResponses = tagPage.getContent().stream()
                 .map(tagMapper::toTagResponse)

@@ -4,17 +4,23 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.example.backend.dto.response.PageResponse;
 import com.example.backend.dto.response.TagResponse;
+import com.example.backend.entity.Tag;
+import com.example.backend.enums.ErrorCode;
+import com.example.backend.exception.ApiException;
 import com.example.backend.mapper.TagMapper;
 import com.example.backend.repository.TagRepository;
 import com.example.backend.service.GoogleTagManagerService.TagService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.example.backend.dto.request.Tag.ListTagRequestGTM;
 import com.google.api.services.tagmanager.TagManager;
 import com.google.api.services.tagmanager.model.ListTagsResponse;
-import com.google.api.services.tagmanager.model.Tag;
 
 import lombok.RequiredArgsConstructor;
 
@@ -33,7 +39,7 @@ public class TagServiceImpl implements TagService {
     private final DataSource dataSource;
 
     @Override
-    public List<Tag> listTagGTM(ListTagRequestGTM requestGTM) throws IOException {
+    public List<com.google.api.services.tagmanager.model.Tag> listTagGTM(ListTagRequestGTM requestGTM) throws IOException {
         // Fetch tags from Google Tag Manager based on the provided container and workspace IDs.
         String parent = String.format("accounts/%s/containers/%s/workspaces/%s", accountId, requestGTM.getContainerId(),
                 requestGTM.getWorkspaceId());
@@ -49,11 +55,41 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
-    public List<TagResponse> listTags() {
-        // Retrieve all tags from the local database and map them to TagResponse DTOs.
-        return tagRepository.findAll().stream()
+    public PageResponse<TagResponse> listTags(int page, int size) {
+        // Create a Pageable object for pagination
+        Pageable pageable = PageRequest.of(page - 1, size); // Convert to zero-based index
+        Page<Tag> tagPage = tagRepository.findAll(pageable); // Fetch paginated tags from the local database
+        tagPage.getContent().forEach(tag -> {
+            System.out.println("Tag ID: " + tag.getTagId());
+            System.out.println("Created At: " + tag.getCreatedAt());
+            System.out.println("Updated At: " + tag.getUpdatedAt());
+            System.out.println("Created By: " + tag.getCreatedBy());
+            System.out.println("Updated By: " + tag.getUpdatedBy());
+            System.out.println("Deleted Flag: " + tag.getDeletedFlag());
+        });
+        // Map the Tag entities to TagResponse DTOs
+        List<TagResponse> tagResponses = tagPage.getContent().stream()
                 .map(tagMapper::toTagResponse)
                 .collect(Collectors.toList());
+
+        return createPageResponse(tagPage, tagResponses);
+    }
+
+    @Override
+    public TagResponse getTagById(Long id){
+        return tagRepository.findById(id).map(tagMapper::toTagResponse)
+                .orElseThrow(() -> new ApiException(ErrorCode.BAD_REQUEST.getCode(),"Tag with id " + id +" not found"));
+    }
+
+
+    private PageResponse<TagResponse> createPageResponse(Page<Tag> pageData, List<TagResponse> tagResponses) {
+        return PageResponse.<TagResponse>builder()
+                .currentPage(pageData.getNumber() + 1)
+                .totalPages(pageData.getTotalPages())
+                .pageSize(pageData.getSize())
+                .totalElements(pageData.getTotalElements())
+                .data(tagResponses)
+                .build();
     }
 
 }

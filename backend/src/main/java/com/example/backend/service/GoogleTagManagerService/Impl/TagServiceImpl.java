@@ -3,8 +3,10 @@ package com.example.backend.service.GoogleTagManagerService.Impl;
 import com.example.backend.dto.ParameterDto;
 import com.example.backend.dto.TagDto;
 import com.example.backend.dto.request.CreateTagRequest;
+import com.example.backend.dto.request.ListTagRequestGTM;
 import com.example.backend.dto.request.ParameterRequest;
 import com.example.backend.dto.response.ApiResponse;
+import com.example.backend.dto.response.PageResponse;
 import com.example.backend.dto.response.TagResponse;
 import com.example.backend.entity.ParameterMaster;
 import com.example.backend.entity.TemplateMaster;
@@ -17,13 +19,19 @@ import com.example.backend.mapper.TagMapper;
 import com.example.backend.repository.*;
 import com.example.backend.service.GoogleTagManagerService.TagService;
 import com.google.api.services.tagmanager.TagManager;
+import com.google.api.services.tagmanager.model.ListTagsResponse;
 import com.google.api.services.tagmanager.model.Parameter;
-import com.google.api.services.tagmanager.model.Tag;
+//import com.google.api.services.tagmanager.model.Tag;
+import com.example.backend.entity.Tag;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -41,7 +49,7 @@ public class TagServiceImpl implements TagService {
     private final TriggerTemplateRepository triggerTemplateRepository;
 
 
-    private TagResponse covertTagToTagResponse(Tag tag,CreateTagRequest request) {
+    private TagResponse covertTagToTagResponse(com.google.api.services.tagmanager.model.Tag tag,CreateTagRequest request) {
         List<ParameterDto> parameterDtos = new ArrayList<>();
         for(Parameter parameter: tag.getParameter()){
             ParameterDto parameterDto= ParameterDto.builder()
@@ -73,7 +81,7 @@ public class TagServiceImpl implements TagService {
         return response;
     }
 
-    private com.example.backend.entity.Tag saveTag(Tag tag,
+    private Tag saveTag(com.google.api.services.tagmanager.model.Tag tag,
                                                    CreateTagRequest request,
                                                    TemplateMaster templateMaster,
                                                    Set<ParameterMaster> parameterMasters,
@@ -81,7 +89,7 @@ public class TagServiceImpl implements TagService {
     ){
         Set<TemplateMaster> templateMasterSet = new LinkedHashSet<>();
         templateMasterSet.add(templateMaster);
-        com.example.backend.entity.Tag entity= com.example.backend.entity.Tag.builder()
+        Tag entity= Tag.builder()
                 .tagGtmId(tag.getTagId())
                 .accountId(tag.getAccountId()!=null?tag.getAccountId():accountId)
                 .containerId(tag.getContainerId()!=null?tag.getContainerId(): request.getContainerId())
@@ -110,6 +118,16 @@ public class TagServiceImpl implements TagService {
         }
     }
 
+    private PageResponse<TagResponse> createPageResponse(Page<Tag> pageData, List<TagResponse> tagResponses) {
+        return PageResponse.<TagResponse>builder()
+                .currentPage(pageData.getNumber() + 1)
+                .totalPages(pageData.getTotalPages())
+                .pageSize(pageData.getSize())
+                .totalElements(pageData.getTotalElements())
+                .data(tagResponses)
+                .build();
+    }
+
     @Override
     public ApiResponse<TagResponse> CreateTag(CreateTagRequest request) {
         if (request.getTagName() == null || request.getTagName().isEmpty() || request.getTagType() == null || request.getTagType().isEmpty()) {
@@ -126,7 +144,7 @@ public class TagServiceImpl implements TagService {
             }
             TemplateMaster templateMaster = findTemplateByType.get();
             String parent = String.format("accounts/%s/containers/%s/workspaces/%s", accountId, request.getContainerId(),request.getWorkspaceId());
-            Tag tag = new Tag();
+            com.google.api.services.tagmanager.model.Tag tag = new com.google.api.services.tagmanager.model.Tag();
             tag.setName(request.getTagName());
             tag.setType(templateMaster.getType()); List<Parameter> parameters= new ArrayList<>();
             Set<ParameterMaster> parameterMasters= new LinkedHashSet<>();
@@ -164,7 +182,7 @@ public class TagServiceImpl implements TagService {
             if(TagStatus.SAVE_AND_PUSH.equals(request.getStatus())){
                 tag= tagManager.accounts().containers().workspaces().tags().create(parent,tag).execute();
             }
-            com.example.backend.entity.Tag tagEntity=saveTag(tag,request, templateMaster, parameterMasters,triggers);
+            Tag tagEntity=saveTag(tag,request, templateMaster, parameterMasters,triggers);
             TagResponse convertCreateTagRes= covertTagToTagResponse(tag,request);
             convertCreateTagRes.setTagId(tagEntity.getTagId());
             return createResponse(TagResponse.class, 200, "Create tag success", convertCreateTagRes);
@@ -188,6 +206,40 @@ public class TagServiceImpl implements TagService {
         }catch (Exception e){
             throw new ApiException(ErrorCode.INTERNAL_SERVER_ERROR.getCode(), e.getMessage());
         }
+    }
+
+    @Override
+    public List<com.google.api.services.tagmanager.model.Tag> listTagGTM(ListTagRequestGTM requestGTM) throws IOException {
+        String parent = String.format("accounts/%s/containers/%s/workspaces/%s", accountId, requestGTM.getContainerId(),
+                requestGTM.getWorkspaceId());
+        TagManager.Accounts.Containers.Workspaces.Tags.List request = tagManager.accounts().containers().workspaces()
+                .tags().list(parent);
+        ListTagsResponse response = request.execute();
+
+        if (response != null && response.getTag() != null) {
+            return response.getTag();
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public PageResponse<TagResponse> listTags(int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        Page<Tag> tagPage = tagRepository.findAll(pageable);
+
+        // Map the Tag entities to TagResponse DTOs
+        List<TagResponse> tagResponses = tagPage.getContent().stream()
+                .map(tagMapper::convertEntityToTagResponse)
+                .collect(Collectors.toList());
+
+        return createPageResponse(tagPage, tagResponses);
+    }
+
+    @Override
+    public TagResponse getTagById(Long id) {
+        // Create a Pageable object for pagination
+       return null;
     }
 
     @NotNull

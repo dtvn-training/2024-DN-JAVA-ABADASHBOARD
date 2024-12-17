@@ -1,6 +1,8 @@
 package com.example.backend.mapper;
 
+import com.example.backend.dto.ParameterDto;
 import com.example.backend.dto.TagDto;
+import com.example.backend.dto.response.TagResponse;
 import com.example.backend.entity.Tag;
 import com.example.backend.entity.Trigger;
 import org.springframework.stereotype.Component;
@@ -8,6 +10,7 @@ import org.springframework.stereotype.Component;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class TagMapper implements AbstractDefault<TagDto, Tag>{
@@ -66,5 +69,37 @@ public class TagMapper implements AbstractDefault<TagDto, Tag>{
         entity.setParameterMasters(dto.getParameterMasters());
         entity.setTemplateMasters(dto.getTemplateMasters());
         return entity;
+    }
+    public TagResponse convertEntityToTagResponse(Tag tag) {
+        if (tag == null) {
+            return null;
+        }
+        TagResponse tagResponse = new TagResponse(
+                tag.getTagId(),
+                tag.getAccountId(),
+                tag.getContainerId(),
+                tag.getWorkspaceId(),
+//                tag.getConsentSettings(),
+                tag.getStatus() != null ? tag.getStatus().name() : null,
+                tag.getFingerPrint(),
+                tag.getTagName(),
+//                generatePath(tag),
+                tag.getTagGtmId(),
+//                generateTagManagerUrl(tag),
+                tag.getType(),
+                tag.getParameterMasters() != null ? tag.getParameterMasters()
+                        .stream()
+                        .map(tagMap-> ParameterDto.builder()
+                                .key(tagMap.getParameterKey())
+                                .type(tagMap.getType())
+                                .build())
+                        .collect(Collectors.toList()) : null,
+                tag.getCreatedAt(),
+                tag.getUpdatedAt(),
+                tag.getCreatedBy(),
+                tag.getUpdatedBy(),
+                tag.getDeletedFlag()
+        );
+        return tagResponse;
     }
 }

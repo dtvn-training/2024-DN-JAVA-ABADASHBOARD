@@ -19,6 +19,8 @@ public class CreateTagRequest {
     @Null
     private List<String> positiveTriggerId;
     @Null
+    private List<String> blockingTriggerId;
+    @Null
     private TagConsentSetting consentSetting;
     @NotNull(message = "containerId is required")
     private String containerId;

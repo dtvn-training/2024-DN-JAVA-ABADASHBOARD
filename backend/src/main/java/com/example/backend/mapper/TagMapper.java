@@ -50,4 +50,21 @@ public class TagMapper implements AbstractDefault<TagDto, Tag>{
                 .templateMasters(dto.getTemplateMasters())
                 .build();
     }
+
+    public Tag convertDtoToEntity(TagDto dto,Tag entity) {
+        entity.setTagId(dto.getTagId());
+        entity.setTagGtmId(dto.getTagGtmId());
+        entity.setTagName(dto.getTagName());
+        entity.setType(dto.getType());
+        entity.setStatus(dto.getStatus());
+        entity.setAccountId(dto.getAccountId());
+        entity.setContainerId(dto.getContainerId());
+        entity.setFingerPrint(dto.getFingerPrint());
+        entity.setWorkspaceId(dto.getWorkspaceId());
+        entity.setTagFiringOption(dto.getTagFiringOption());
+        entity.setMonitoringMetadata(dto.getMonitoringMetadata());
+        entity.setParameterMasters(dto.getParameterMasters());
+        entity.setTemplateMasters(dto.getTemplateMasters());
+        return entity;
+    }
 }

@@ -47,6 +47,8 @@ public class TagDto {
     @Null
     private List<String> positiveTriggerId;
     @Null
+    private List<String> blockingTriggerId;
+    @Null
     private TagConsentSetting consentSetting;
     @NotNull(message = "NOT_NULL")
     Set<TemplateMaster> templateMasters;

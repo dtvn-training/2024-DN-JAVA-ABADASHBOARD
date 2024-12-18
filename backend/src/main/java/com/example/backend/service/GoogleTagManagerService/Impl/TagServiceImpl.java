@@ -8,9 +8,7 @@ import com.example.backend.dto.request.ParameterRequest;
 import com.example.backend.dto.response.ApiResponse;
 import com.example.backend.dto.response.PageResponse;
 import com.example.backend.dto.response.TagResponse;
-import com.example.backend.entity.ParameterMaster;
-import com.example.backend.entity.TemplateMaster;
-import com.example.backend.entity.Trigger;
+import com.example.backend.entity.*;
 import com.example.backend.enums.DeletedFlag;
 import com.example.backend.enums.ErrorCode;
 import com.example.backend.enums.TagStatus;
@@ -21,8 +19,6 @@ import com.example.backend.service.GoogleTagManagerService.TagService;
 import com.google.api.services.tagmanager.TagManager;
 import com.google.api.services.tagmanager.model.ListTagsResponse;
 import com.google.api.services.tagmanager.model.Parameter;
-//import com.google.api.services.tagmanager.model.Tag;
-import com.example.backend.entity.Tag;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
@@ -165,8 +161,10 @@ public class TagServiceImpl implements TagService {
             Set<Trigger> triggers= new LinkedHashSet<>();
             if(request.getPositiveTriggerId() != null && !request.getPositiveTriggerId().isEmpty()){
                 for(String triggerId : request.getPositiveTriggerId()){
-                    Trigger checkTriggerExist= checkTriggerValid(triggerId);
-                    triggers.add(checkTriggerExist);
+                    Optional<TriggerTemplate> getTrigger= triggerTemplateRepository.findByKey(Integer.parseInt(triggerId));
+                    if(getTrigger.isEmpty()){
+                        throw new ApiException(ErrorCode.BAD_REQUEST.getCode(), "Trigger " + triggerId + " does not exist");
+                    }
                 }
                 tag.setFiringTriggerId(request.getPositiveTriggerId());
             }
@@ -176,7 +174,7 @@ public class TagServiceImpl implements TagService {
                     Trigger checkTriggerExist= checkTriggerValid(triggerId);
                     triggers.add(checkTriggerExist);
                 }
-                tag.setFiringTriggerId(request.getPositiveTriggerId());
+                tag.setBlockingTriggerId(request.getBlockingTriggerId());
             }
             if(request.getConsentSetting()!=null) tag.setConsentSettings(request.getConsentSetting());
             if(TagStatus.SAVE_AND_PUSH.equals(request.getStatus())){
@@ -197,7 +195,6 @@ public class TagServiceImpl implements TagService {
             Optional<com.example.backend.entity.Tag> findTagExist= tagRepository.findByTagName(tagDto.getTagName());
             if(findTagExist.isPresent()){
                 com.example.backend.entity.Tag findTag= findTagExist.get();
-//                updateTag= tagMapper.mapToEntity(tagDto);
                 findTag= tagMapper.convertDtoToEntity(tagDto,findTag);
                 Set<Trigger> filterTrigger= findTag.getTriggers();
 

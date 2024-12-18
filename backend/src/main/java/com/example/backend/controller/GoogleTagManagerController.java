@@ -4,18 +4,15 @@ import com.example.backend.dto.request.CreateTagRequest;
 import com.example.backend.dto.response.ApiResponse;
 import com.example.backend.dto.response.PageResponse;
 import com.example.backend.dto.response.TagResponse;
+import com.example.backend.enums.ErrorCode;
+import com.example.backend.exception.ApiException;
 import com.example.backend.service.GoogleTagManagerService.TagService;
-import com.google.api.services.tagmanager.TagManager;
-import com.google.api.services.tagmanager.model.Trigger;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.io.IOException;
 
 @RestController
 @RequestMapping("/google-tag-manager")
@@ -26,9 +23,13 @@ public class GoogleTagManagerController {
 
     @PostMapping("/create-tag")
     public ApiResponse<TagResponse> createTag(@Valid @RequestBody CreateTagRequest request) {
-        return tagService.CreateTag(request);
+        try{
+            return tagService.CreateTag(request);
+        }catch(Exception e){
+            throw new ApiException(ErrorCode.BAD_REQUEST.getCode(), e.getMessage());
+        }
     }
-    @GetMapping("/list-tag")
+        @GetMapping("/list-tag")
     public ApiResponse<PageResponse<TagResponse>> getListTag(
             @RequestParam(value = "page" , required = false , defaultValue = "1") int page,
             @RequestParam (value = "size" , required = false , defaultValue = "6") int size

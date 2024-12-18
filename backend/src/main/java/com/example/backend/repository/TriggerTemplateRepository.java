@@ -8,4 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface TriggerTemplateRepository extends JpaRepository<TriggerTemplate, Long> {
+    Optional<TriggerTemplate> findByKey(int key);
 }

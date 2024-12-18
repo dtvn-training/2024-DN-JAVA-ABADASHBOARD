@@ -74,18 +74,16 @@ public class TagMapper implements AbstractDefault<TagDto, Tag>{
         if (tag == null) {
             return null;
         }
-        TagResponse tagResponse = new TagResponse(
+        return new TagResponse(
                 tag.getTagId(),
                 tag.getAccountId(),
                 tag.getContainerId(),
                 tag.getWorkspaceId(),
-//                tag.getConsentSettings(),
+                null,
                 tag.getStatus() != null ? tag.getStatus().name() : null,
                 tag.getFingerPrint(),
                 tag.getTagName(),
-//                generatePath(tag),
                 tag.getTagGtmId(),
-//                generateTagManagerUrl(tag),
                 tag.getType(),
                 tag.getParameterMasters() != null ? tag.getParameterMasters()
                         .stream()
@@ -100,6 +98,5 @@ public class TagMapper implements AbstractDefault<TagDto, Tag>{
                 tag.getUpdatedBy(),
                 tag.getDeletedFlag()
         );
-        return tagResponse;
     }
 }

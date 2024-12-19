@@ -1,15 +1,26 @@
 package com.example.backend.mapper;
 
+
 import com.example.backend.dto.ParameterDto;
 import com.example.backend.entity.ParameterMaster;
+import org.springframework.stereotype.Component;
 
-import org.mapstruct.Mapper;
+@Component
+public class ParameterMapper implements AbstractDefault<ParameterDto, ParameterMaster> {
 
-import java.util.List;
+    @Override
+    public ParameterDto mapToDto(ParameterMaster entity) {
+        return ParameterDto.builder()
+                .key(entity.getParameterKey())
+                .type(entity.getType())
+                .build();
+    }
 
-@Mapper(componentModel = "spring")
-public interface ParameterMapper {
-    ParameterDto toParameterDto(ParameterMaster parameterMaster);
-
-    List<ParameterDto> toParameterDtoList(List<ParameterMaster> parameterMasters);
+    @Override
+    public ParameterMaster mapToEntity(ParameterDto dto) {
+        return ParameterMaster.builder()
+                .parameterKey(dto.getKey())
+                .type(dto.getType())
+                .build();
+    }
 }

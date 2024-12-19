@@ -25,7 +25,7 @@ public class ParameterMaster {
 
     @NotBlank(message = "key cannot be blank")
     @Column(name = "parameter_key", nullable = false)
-    String key;
+    String parameterKey;
 
     @NotNull(message = "type cannot be null")
     @Column(name = "type", nullable = false)

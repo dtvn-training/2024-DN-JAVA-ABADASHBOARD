@@ -3,7 +3,7 @@ package com.example.backend.controller;
 import java.util.List;
 
 import com.example.backend.dto.response.PageResponse;
-import com.example.backend.service.GoogleTagManagerService.Impl.TagServiceImpl;
+import com.example.backend.service.GoogleTagManagerService.TagService;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 @Slf4j
 public class TagManagerController {
 
-    private final TagServiceImpl tagService;
+    TagService tagService;
 
     @GetMapping("/list-tag-gtm")
     public ResponseEntity<ApiResponse<List<com.google.api.services.tagmanager.model.Tag>>> listTag(@RequestBody ListTagRequestGTM request) {
@@ -39,11 +39,11 @@ public class TagManagerController {
 
     @GetMapping("/list-tag")
     public ApiResponse<PageResponse<TagResponse>> getListTag(
-            @RequestParam(value = "page" , required = false , defaultValue = "1") int page,
-            @RequestParam (value = "size" , required = false , defaultValue = "6") int size
+            @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+            @RequestParam(value = "size", required = false, defaultValue = "6") int size
     ) {
         try {
-            PageResponse<TagResponse> tagResponses = tagService.listTags(page,size);
+            PageResponse<TagResponse> tagResponses = tagService.listTags(page, size);
             return ApiResponse.<PageResponse<TagResponse>>builder()
                     .message("success")
                     .data(tagResponses)

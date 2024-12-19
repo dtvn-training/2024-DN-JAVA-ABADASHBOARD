@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.example.backend.dto.request.Tag.ListTagRequestGTM;
@@ -56,22 +57,23 @@ public class TagServiceImpl implements TagService {
 
     @Override
     public PageResponse<TagResponse> listTags(int page, int size) {
-        // Create a Pageable object for pagination
-        Pageable pageable = PageRequest.of(page - 1, size);
+        Sort sort = Sort.by(Sort.Direction.DESC,"createdAt");
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
         Page<Tag> tagPage = tagRepository.findAll(pageable);
 
         // Map the Tag entities to TagResponse DTOs
         List<TagResponse> tagResponses = tagPage.getContent().stream()
-                .map(tagMapper::toTagResponse)
+                .map(tagMapper::convertEntityToTagResponse)
                 .collect(Collectors.toList());
 
         return createPageResponse(tagPage, tagResponses);
     }
 
     @Override
-    public TagResponse getTagById(Long id){
-        return tagRepository.findById(id).map(tagMapper::toTagResponse)
-                .orElseThrow(() -> new ApiException(ErrorCode.BAD_REQUEST.getCode(),"Tag with id " + id +" not found"));
+    public TagResponse getTagById(Long id) {
+        return tagRepository.findById(id)
+                .map(tagMapper::convertEntityToTagResponse)
+                .orElseThrow(() -> new ApiException(ErrorCode.BAD_REQUEST.getCode(), "Tag with id " + id + " not found"));
     }
 
 

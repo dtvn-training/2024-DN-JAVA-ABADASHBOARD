@@ -1,7 +1,6 @@
 package com.example.backend.service.GoogleTagManagerService;
 
 import com.example.backend.dto.request.Tag.ListTagRequestGTM;
-import com.example.backend.dto.response.ApiResponse;
 import com.example.backend.dto.response.PageResponse;
 import com.example.backend.dto.response.TagResponse;
 import com.google.api.services.tagmanager.model.Tag;

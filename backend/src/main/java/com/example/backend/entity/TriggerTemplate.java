@@ -30,6 +30,7 @@ public class TriggerTemplate {
     private String groupDisplayNameAllEvents;
     @Column(nullable = false)
     private String groupDisplayNameSomeEvents;
+    private String type;
     @ManyToMany(mappedBy = "triggerTemplates")
     Set<Trigger> triggers;
 }

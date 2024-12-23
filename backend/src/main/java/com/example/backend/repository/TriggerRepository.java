@@ -9,4 +9,6 @@ import java.util.Optional;
 @Repository
 public interface TriggerRepository extends JpaRepository<Trigger, Long> {
     Optional<Trigger> findByTriggerGTMId(String triggerGTMId);
+    Optional<Trigger> findByType(String type);
+    Optional<Trigger> findByTriggerId(Long triggerId);
 }

@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Null;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 @Getter
@@ -16,11 +17,11 @@ public class CreateTagRequest {
     private String tagName;
     @NotNull(message = "tag type is required")
     private String tagType;
-    @Null
+    @Nullable
     private List<String> positiveTriggerId;
-    @Null
+    @Nullable
     private List<String> blockingTriggerId;
-    @Null
+    @Nullable
     private TagConsentSetting consentSetting;
     @NotNull(message = "containerId is required")
     private String containerId;

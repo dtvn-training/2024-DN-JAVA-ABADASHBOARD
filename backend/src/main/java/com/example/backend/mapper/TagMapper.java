@@ -4,9 +4,11 @@ import com.example.backend.dto.ParameterDto;
 import com.example.backend.dto.TagDto;
 import com.example.backend.dto.response.TagResponse;
 import com.example.backend.entity.Tag;
+import com.example.backend.entity.TagTrigger;
 import com.example.backend.entity.Trigger;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -16,7 +18,6 @@ import java.util.stream.Collectors;
 public class TagMapper implements AbstractDefault<TagDto, Tag>{
     @Override
     public TagDto mapToDto(Tag entity) {
-        List<String> triggerIds= entity.getTriggers().stream().map(Trigger::getTriggerGTMId).toList();
         return TagDto.builder()
                 .tagId(entity.getTagId())
                 .tagGtmId(entity.getTagGtmId())
@@ -29,7 +30,6 @@ public class TagMapper implements AbstractDefault<TagDto, Tag>{
                 .workspaceId(entity.getWorkspaceId())
                 .tagFiringOption(entity.getTagFiringOption())
                 .monitoringMetadata(entity.getMonitoringMetadata())
-                .positiveTriggerId(triggerIds)
                 .templateMasters(entity.getTemplateMasters())
                 .parameterMasters(entity.getParameterMasters())
                 .build();
@@ -74,6 +74,15 @@ public class TagMapper implements AbstractDefault<TagDto, Tag>{
         if (tag == null) {
             return null;
         }
+        List<String> positiveTrigger= new ArrayList<>();
+        List<String> blockingTrigger = new ArrayList<>();
+        for(TagTrigger tagTrigger: tag.getTagTriggers()){
+            if(tagTrigger.isPositive()){
+                positiveTrigger.add(tagTrigger.getTrigger().getType());
+            }else{
+                blockingTrigger.add(tagTrigger.getTrigger().getType());
+            }
+        }
         return new TagResponse(
                 tag.getTagId(),
                 tag.getAccountId(),
@@ -92,6 +101,8 @@ public class TagMapper implements AbstractDefault<TagDto, Tag>{
                                 .type(tagMap.getType())
                                 .build())
                         .collect(Collectors.toList()) : null,
+                positiveTrigger,
+                blockingTrigger,
                 tag.getCreatedAt(),
                 tag.getUpdatedAt(),
                 tag.getCreatedBy(),

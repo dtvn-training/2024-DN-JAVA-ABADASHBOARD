@@ -51,4 +51,32 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
         }
     }
 
+    @Override
+    public List<Map<String, String>> getReportByParam(String dimension, String metric) {
+        try{
+            DimensionType dimensionType = DimensionType.findByName(dimension);
+            MetricType metricType = MetricType.findByName(metric);
+
+            RunReportRequest request =
+                    RunReportRequest.newBuilder()
+                            .setProperty("properties/" + propertyId)
+                            .addDimensions(Dimension.newBuilder().setName(dimensionType.getName()))
+                            .addMetrics(Metric.newBuilder().setName(metricType.getName()))
+                            .addDateRanges(DateRange.newBuilder().setStartDate("2024-11-25").setEndDate("today"))
+                            .build();
+            // Make the request.
+            RunReportResponse response = analyticsData.runReport(request);
+            List<Map<String, String>> result = new ArrayList<>();
+            for (Row row : response.getRowsList()) {
+                Map<String, String> rowData = new HashMap<>();
+                rowData.put(dimension, row.getDimensionValues(0).getValue());
+                rowData.put(metric, row.getMetricValues(0).getValue());
+                result.add(rowData);
+            }
+            return result;
+        }catch (Exception e){
+            throw new ApiException(ErrorCode.BAD_REQUEST.getCode(), e.getMessage());
+        }
+    }
+
 }

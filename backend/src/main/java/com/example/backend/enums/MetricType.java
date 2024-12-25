@@ -12,4 +12,13 @@ public enum MetricType {
     }
 
     private final String name;
+
+    public static MetricType findByName(String name) {
+        for (MetricType metricType : MetricType.values()) {
+            if (metricType.name.equals(name)) {
+                return metricType;
+            }
+        }
+        throw new IllegalArgumentException("No MetricType with name " + name + " found.");
+    }
 }

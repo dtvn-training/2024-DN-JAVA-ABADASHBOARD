@@ -7,6 +7,7 @@ import com.example.backend.service.GoogleAnalyticService.GoogleAnalyticService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -30,6 +31,16 @@ public class GoogleAnalyticController {
     public ApiResponse<List<Map<String, String>>> getReportOfGoogleAnalytic() {
         try{
             List<Map<String, String>> response= googleAnalyticService.reportResponse();
+            return createResponse(response);
+        }catch (Exception e){
+            throw new ApiException(ErrorCode.BAD_REQUEST.getCode(),e.getMessage());
+        }
+    }
+
+    @GetMapping("/run-report/param")
+    public ApiResponse<List<Map<String, String>>> getReportOfGoogleAnalyticByParams(@RequestParam("dimension") String dimension, @RequestParam("metric") String metric) {
+        try{
+            List<Map<String, String>> response= googleAnalyticService.getReportByParam(dimension, metric);
             return createResponse(response);
         }catch (Exception e){
             throw new ApiException(ErrorCode.BAD_REQUEST.getCode(),e.getMessage());

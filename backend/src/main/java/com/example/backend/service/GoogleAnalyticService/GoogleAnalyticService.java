@@ -8,4 +8,5 @@ import java.util.Map;
 @Service
 public interface GoogleAnalyticService {
     List<Map<String, String>> reportResponse();
+    List<Map<String,String>> getReportByParam(String dimension, String metric);
 }

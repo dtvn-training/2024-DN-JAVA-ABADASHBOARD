@@ -13,4 +13,13 @@ public enum DimensionType {
 
     private final String name;
 
+    public static DimensionType findByName(String name) {
+        for (DimensionType dimension : DimensionType.values()) {
+            if (dimension.name.equals(name)) {
+                return dimension;
+            }
+        }
+        throw new IllegalArgumentException("No DimensionType with name " + name + " found.");
+    }
+
 }

@@ -3,7 +3,9 @@ package com.example.backend.service.GoogleAnalyticService.Impl;
 import com.example.backend.dto.request.ReportRequest;
 import com.example.backend.entity.Campaign;
 import com.example.backend.entity.DimensionMaster;
+import com.example.backend.entity.Event;
 import com.example.backend.entity.MetricMaster;
+import com.example.backend.enums.DeletedFlag;
 import com.example.backend.enums.DimensionType;
 import com.example.backend.enums.ErrorCode;
 import com.example.backend.enums.MetricType;
@@ -69,58 +71,46 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
         try{
             Campaign findCampaignExist= campaignRepository.findByCampaignId(reportRequest.getCampaignId())
                     .orElseThrow(()-> new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(),"Campaign is not found"));
-            List<Dimension> dimensions= new ArrayList<>();
-            for(String dimensionKey : reportRequest.getDimensions()){
-                DimensionMaster findDimensionExist= dimensionMasterRepository.findByDimensionKey(dimensionKey)
-                        .orElseThrow(()-> new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(),"Dimension is not found"));
-                Dimension dimension= Dimension.newBuilder()
-                        .setName(findDimensionExist.getDimensionKey())
-                        .build();
-                dimensions.add(dimension);
+            DimensionMaster findDimensionExist= dimensionMasterRepository.findByDimensionKey(reportRequest.getDimension())
+                    .orElseThrow(()-> new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(),"Dimension is not found"));
+            MetricMaster findMetricExist= metricMasterRepository.findByMetricKey(reportRequest.getMetric())
+                    .orElseThrow(()-> new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(),"Metric is not found"));
+
+            if(!findDimensionExist.getMetricMasters().contains(findMetricExist)){
+                throw new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(),"Metric is not valid");
             }
-            List<Metric> metrics= new ArrayList<>();
-            for(String metricKey : reportRequest.getMetrics()){
-                MetricMaster findMetricExist= metricMasterRepository.findByMetricKey(metricKey)
-                        .orElseThrow(()->new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(),"Metric is not found"));
-                Metric metric= Metric.newBuilder()
-                        .setName(findMetricExist.getMetricKey())
-                        .build();
-                metrics.add(metric);
-            }
-
-            LocalDateTime now = LocalDateTime.now();
-            now= now.minusDays(reportRequest.getTime());
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            String formattedDate = now.format(formatter);
-
-
+//            LocalDateTime startDateParse= LocalDateTime.parse(reportRequest.getStartDate());
+//            LocalDateTime endDateParse= LocalDateTime.parse(reportRequest.getEndDate());
+//            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+//            String startDateStr = startDateParse.format(formatter);
+//            String endDateStr= endDateParse.format(formatter);
             RunReportRequest request =
                     RunReportRequest.newBuilder()
                             .setProperty("properties/" + propertyId)
-                            .addAllDimensions(dimensions)
-                            .addAllMetrics(metrics)
-                            .addDateRanges(DateRange.newBuilder().setStartDate(formattedDate).setEndDate("today"))
+                            .addDimensions(Dimension.newBuilder().setName(reportRequest.getDimension()))
+                            .addMetrics(Metric.newBuilder().setName(reportRequest.getMetric()))
+                            .addDateRanges(DateRange.newBuilder().setStartDate(reportRequest.getStartDate()).setEndDate(reportRequest.getEndDate()))
                             .build();
             // Make the request.
             RunReportResponse response = analyticsData.runReport(request);
             List<Row> rows = response.getRowsList();
             List<Map<String, String>> result = new ArrayList<>();
-
-            for(int i=0;i<rows.size();i++){
+            List<Event> saveEvent= new ArrayList<>();
+            for (Row row : rows) {
                 Map<String, String> rowData = new HashMap<>();
-                rowData.put(reportRequest.getDimensions().getFirst(),rows.get(i).getDimensionValues(0).getValue());
-                rowData.put(reportRequest.getDimensions().get(1),rows.get(i).getDimensionValues(1).getValue());
-                rowData.put(reportRequest.getMetrics().getFirst(),rows.get(i).getMetricValues(0).getValue());
+                rowData.put(reportRequest.getDimension(), row.getDimensionValues(0).getValue());
+                rowData.put(reportRequest.getMetric(), row.getMetricValues(0).getValue());
+                Event event= Event.builder()
+                        .campaign(findCampaignExist)
+                        .eventName(row.getDimensionValues(0).getValue())
+                        .eventLabel(findDimensionExist.getDimensionKey())
+                        .eventValue(row.getMetricValues(0).getValue())
+                        .build();
+                event.setDeletedFlag(DeletedFlag.ACTIVE);
+                saveEvent.add(event);
                 result.add(rowData);
             }
-//            for (Row row : response.getRowsList()) {
-//                Map<String, String> rowData = new HashMap<>();
-//                rowData.put(, row.getDimensionValues(0).getValue());
-//                rowData.put(row.getDimensionValues(1).getValue(), row.getMetricValues(0).getValue());
-//                rowData.put(reportRequest.getMetric(), row.getMetricValues(0).getValue());
-//                result.add(rowData);
-//            }
-
+            eventRepository.saveAll(saveEvent);
             return result;
         }catch (Exception e){
             throw new ApiException(ErrorCode.BAD_REQUEST.getCode(), e.getMessage());

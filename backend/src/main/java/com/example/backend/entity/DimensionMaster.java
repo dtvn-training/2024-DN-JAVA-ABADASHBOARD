@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.Set;
+
 
 @Entity
 @Table(name = "db_dimension_master")
@@ -28,4 +30,12 @@ public class DimensionMaster {
     @NotNull(message = "NOT_NULL")
     @Column(name = "name", nullable = false)
     String name;
+
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinTable(
+            name = "db_dimension_metric",
+            joinColumns = @JoinColumn(name = "dimension_id"),
+            inverseJoinColumns = @JoinColumn(name = "metric_id")
+    )
+    Set<MetricMaster> metricMasters;
 }

@@ -39,9 +39,6 @@ public class Event extends AbstractDefault {
     @Column(name = "timestamp")
     LocalDateTime timestamp;
 
-    @Column(name = "update_at")
-    LocalDateTime updateAt;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "campaign_id", referencedColumnName = "campaign_id")
     Campaign campaign;

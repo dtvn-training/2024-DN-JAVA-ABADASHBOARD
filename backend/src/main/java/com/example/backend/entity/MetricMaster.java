@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.Set;
+
 @Entity
 @Table(name = "db_metric_master")
 @Getter
@@ -27,4 +29,7 @@ public class MetricMaster {
     @NotNull(message = "NOT_NULL")
     @Column(name = "name", nullable = false)
     String name;
+
+    @ManyToMany(mappedBy = "metricMasters")
+    Set<DimensionMaster> dimensionMasters;
 }

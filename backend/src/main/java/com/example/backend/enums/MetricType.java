@@ -5,7 +5,12 @@ import lombok.Getter;
 @Getter
 public enum MetricType {
     ActiveUser("activeUsers"),
-    EventCount("eventCount");
+    EventCount("eventCount"),
+    EventCountPerUser("eventCountPerUser"),
+    NewUsers("newUsers"),
+    ItemsViewed("itemsViewed"),
+    ScreenPageViews("screenPageViews"),
+    Sessions("sessions");
 
     MetricType(String name){
         this.name=name;

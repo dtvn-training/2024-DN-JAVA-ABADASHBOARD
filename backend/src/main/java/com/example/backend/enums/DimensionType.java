@@ -5,7 +5,11 @@ import lombok.Getter;
 @Getter
 public enum DimensionType {
     EventName("eventName"),
-    City("city");
+    City("city"),
+    Source("source"),
+    PageTitle("pageTitle"),
+    PagePath("pagePath"),
+    Medium("medium");
 
     DimensionType(String name){
         this.name=name;

@@ -1,14 +1,13 @@
 package com.example.backend.controller;
 
+import com.example.backend.dto.request.ReportRequest;
 import com.example.backend.dto.response.ApiResponse;
 import com.example.backend.enums.ErrorCode;
 import com.example.backend.exception.ApiException;
 import com.example.backend.service.GoogleAnalyticService.GoogleAnalyticService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -37,10 +36,10 @@ public class GoogleAnalyticController {
         }
     }
 
-    @GetMapping("/run-report/param")
-    public ApiResponse<List<Map<String, String>>> getReportOfGoogleAnalyticByParams(@RequestParam("dimension") String dimension, @RequestParam("metric") String metric) {
+    @PostMapping("/run-report/param")
+    public ApiResponse<List<Map<String, String>>> getReportOfGoogleAnalyticByParams(@Valid @RequestBody ReportRequest request) {
         try{
-            List<Map<String, String>> response= googleAnalyticService.getReportByParam(dimension, metric);
+            List<Map<String, String>> response= googleAnalyticService.getReportByParam(request);
             return createResponse(response);
         }catch (Exception e){
             throw new ApiException(ErrorCode.BAD_REQUEST.getCode(),e.getMessage());

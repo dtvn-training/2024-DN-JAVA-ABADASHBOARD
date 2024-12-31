@@ -1,5 +1,6 @@
 package com.example.backend.controller;
 
+import com.example.backend.dto.EventDto;
 import com.example.backend.dto.request.ReportRequest;
 import com.example.backend.dto.response.ApiResponse;
 import com.example.backend.enums.ErrorCode;
@@ -36,13 +37,25 @@ public class GoogleAnalyticController {
         }
     }
 
-    @PostMapping("/run-report/param")
-    public ApiResponse<List<Map<String, String>>> getReportOfGoogleAnalyticByParams(@Valid @RequestBody ReportRequest request) {
+    @PostMapping("/save-report")
+    public ApiResponse<List<Map<String, String>>> saveReportOfGoogleAnalyticIntoDb(@Valid @RequestBody ReportRequest request) {
         try{
-            List<Map<String, String>> response= googleAnalyticService.getReportByParam(request);
+            List<Map<String, String>> response= googleAnalyticService.saveEventIntoDatabase(request);
             return createResponse(response);
         }catch (Exception e){
             throw new ApiException(ErrorCode.BAD_REQUEST.getCode(),e.getMessage());
+        }
+    }
+
+    @GetMapping("/get-all-events")
+    public ApiResponse<List<EventDto>> getEventsOfGoogleAnalytic(@RequestParam(value = "pageNum", defaultValue = "0") int pageNum,
+                                                                 @RequestParam(value = "pageSize", defaultValue = "6") int pageSize,
+                                                                 @RequestParam("eventLabel") String eventLabel) {
+        try{
+            List<EventDto> response= googleAnalyticService.getEvents(pageNum, pageSize, eventLabel);
+            return createResponse(response);
+        }catch (Exception e){
+            throw new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(),e.getMessage());
         }
     }
 }

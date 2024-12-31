@@ -1,5 +1,6 @@
 package com.example.backend.service.GoogleAnalyticService.Impl;
 
+import com.example.backend.dto.EventDto;
 import com.example.backend.dto.request.ReportRequest;
 import com.example.backend.entity.Campaign;
 import com.example.backend.entity.DimensionMaster;
@@ -10,6 +11,7 @@ import com.example.backend.enums.DimensionType;
 import com.example.backend.enums.ErrorCode;
 import com.example.backend.enums.MetricType;
 import com.example.backend.exception.ApiException;
+import com.example.backend.mapper.EventMapper;
 import com.example.backend.repository.CampaignRepository;
 import com.example.backend.repository.DimensionMasterRepository;
 import com.example.backend.repository.EventRepository;
@@ -18,8 +20,12 @@ import com.example.backend.service.GoogleAnalyticService.GoogleAnalyticService;
 import com.google.analytics.data.v1beta.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.awt.print.Pageable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -34,6 +40,7 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
     private final MetricMasterRepository metricMasterRepository;
     private final CampaignRepository campaignRepository;
     private final EventRepository eventRepository;
+    private final EventMapper eventMapper;
 
 
     @Override
@@ -67,7 +74,7 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
     }
 
     @Override
-    public List<Map<String, String>> getReportByParam(ReportRequest reportRequest) {
+    public List<Map<String, String>> saveEventIntoDatabase(ReportRequest reportRequest) {
         try{
             Campaign findCampaignExist= campaignRepository.findByCampaignId(reportRequest.getCampaignId())
                     .orElseThrow(()-> new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(),"Campaign is not found"));
@@ -79,11 +86,6 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
             if(!findDimensionExist.getMetricMasters().contains(findMetricExist)){
                 throw new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(),"Metric is not valid");
             }
-//            LocalDateTime startDateParse= LocalDateTime.parse(reportRequest.getStartDate());
-//            LocalDateTime endDateParse= LocalDateTime.parse(reportRequest.getEndDate());
-//            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-//            String startDateStr = startDateParse.format(formatter);
-//            String endDateStr= endDateParse.format(formatter);
             RunReportRequest request =
                     RunReportRequest.newBuilder()
                             .setProperty("properties/" + propertyId)
@@ -114,6 +116,17 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
             return result;
         }catch (Exception e){
             throw new ApiException(ErrorCode.BAD_REQUEST.getCode(), e.getMessage());
+        }
+    }
+
+    @Override
+    public List<EventDto> getEvents(int pageNum, int pageSize, String eventLabel) {
+        try{
+            org.springframework.data.domain.Pageable pageable= PageRequest.of(pageNum,pageSize, Sort.by("createdAt").ascending());
+            Page<Event> events = eventRepository.findAllByEventLabel(eventLabel,pageable);
+            return events.stream().map(eventMapper::mapToDto).toList();
+        }catch (Exception e){
+            throw new ApiException(ErrorCode.INTERNAL_SERVER_ERROR.getStatusCode().value(), e.getMessage());
         }
     }
 

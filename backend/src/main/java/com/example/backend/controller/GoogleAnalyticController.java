@@ -3,11 +3,13 @@ package com.example.backend.controller;
 import com.example.backend.dto.EventDto;
 import com.example.backend.dto.request.ReportRequest;
 import com.example.backend.dto.response.ApiResponse;
+import com.example.backend.dto.response.PageResponse;
 import com.example.backend.enums.ErrorCode;
 import com.example.backend.exception.ApiException;
 import com.example.backend.service.GoogleAnalyticService.GoogleAnalyticService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -48,11 +50,11 @@ public class GoogleAnalyticController {
     }
 
     @GetMapping("/get-all-events")
-    public ApiResponse<List<EventDto>> getEventsOfGoogleAnalytic(@RequestParam(value = "pageNum", defaultValue = "0") int pageNum,
+    public ApiResponse<PageResponse<EventDto>> getEventsOfGoogleAnalytic(@RequestParam(value = "pageNum", defaultValue = "0") int pageNum,
                                                                  @RequestParam(value = "pageSize", defaultValue = "6") int pageSize,
                                                                  @RequestParam("eventLabel") String eventLabel) {
         try{
-            List<EventDto> response= googleAnalyticService.getEvents(pageNum, pageSize, eventLabel);
+            PageResponse<EventDto> response= googleAnalyticService.getEvents(pageNum, pageSize, eventLabel);
             return createResponse(response);
         }catch (Exception e){
             throw new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(),e.getMessage());

@@ -2,6 +2,7 @@ package com.example.backend.service.GoogleAnalyticService.Impl;
 
 import com.example.backend.dto.EventDto;
 import com.example.backend.dto.request.ReportRequest;
+import com.example.backend.dto.response.PageResponse;
 import com.example.backend.entity.Campaign;
 import com.example.backend.entity.DimensionMaster;
 import com.example.backend.entity.Event;
@@ -22,12 +23,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.awt.print.Pageable;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -120,11 +119,18 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
     }
 
     @Override
-    public List<EventDto> getEvents(int pageNum, int pageSize, String eventLabel) {
+    public PageResponse<EventDto> getEvents(int pageNum, int pageSize, String eventLabel) {
         try{
-            org.springframework.data.domain.Pageable pageable= PageRequest.of(pageNum,pageSize, Sort.by("createdAt").ascending());
+            Pageable pageable= PageRequest.of(pageNum,pageSize, Sort.by("createdAt").ascending());
             Page<Event> events = eventRepository.findAllByEventLabel(eventLabel,pageable);
-            return events.stream().map(eventMapper::mapToDto).toList();
+            List<EventDto> data = events.stream().map(eventMapper::mapToDto).toList();
+            PageResponse<EventDto> response= new PageResponse<>();
+            response.setData(data);
+            response.setCurrentPage(events.getNumber());
+            response.setPageSize(events.getSize());
+            response.setTotalPages(events.getTotalPages());
+            response.setTotalElements(events.getTotalElements());
+            return response;
         }catch (Exception e){
             throw new ApiException(ErrorCode.INTERNAL_SERVER_ERROR.getStatusCode().value(), e.getMessage());
         }

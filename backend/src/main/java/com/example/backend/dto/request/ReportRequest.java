@@ -14,8 +14,6 @@ public class ReportRequest {
     private String metric;
     @Nullable
     private String medium;
-    @NotNull(message = "time is required")
-    private int time;
     @NotNull(message = "start date is required")
     private String startDate;
     @NotNull(message = "end date is required")

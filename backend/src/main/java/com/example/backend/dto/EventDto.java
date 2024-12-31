@@ -1,9 +1,7 @@
 package com.example.backend.dto;
 
-import com.example.backend.enums.DeletedFlag;
 import lombok.*;
 
-import java.time.LocalDateTime;
 
 @Setter
 @Getter

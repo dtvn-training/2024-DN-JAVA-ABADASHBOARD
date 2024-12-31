@@ -25,7 +25,7 @@ public class Event extends AbstractDefault {
     @Column(name = "event_id")
     Long eventId;
 
-    @Column(name = "event_name", nullable = false, unique = true)
+    @Column(name = "event_name", nullable = false)
     String eventName;
 
     @NotNull(message = "NOT_NULL")

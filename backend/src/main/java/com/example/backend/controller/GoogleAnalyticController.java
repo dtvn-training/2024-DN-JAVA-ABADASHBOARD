@@ -60,4 +60,19 @@ public class GoogleAnalyticController {
             throw new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(),e.getMessage());
         }
     }
+
+    @GetMapping("/get-all-events-by-time")
+    public ApiResponse<PageResponse<EventDto>> getEventsOfGoogleAnalyticByStartAndEndDate(@RequestParam(value = "pageNum", defaultValue = "0") int pageNum,
+                                                                         @RequestParam(value = "pageSize", defaultValue = "6") int pageSize,
+                                                                         @RequestParam("eventLabel") String eventLabel,
+                                                                         @RequestParam(value = "startDate", defaultValue = "2024-11-01") String startDate,
+                                                                         @RequestParam(value = "endDate", defaultValue = "2024-12-30") String endDate
+    ) {
+        try{
+            PageResponse<EventDto> response= googleAnalyticService.getEventsByStartDateAndEndDate(startDate,endDate,eventLabel,pageNum,pageSize);
+            return createResponse(response);
+        }catch (Exception e){
+            throw new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(),e.getMessage());
+        }
+    }
 }

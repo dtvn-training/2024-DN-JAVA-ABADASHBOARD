@@ -5,9 +5,13 @@ import lombok.*;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 @Builder
 public class NumberOfEventResponse {
-    private int activeUser;
-    private int eventCount;
+    private String eventLabel;
+    private int totalValue;
+
+    public NumberOfEventResponse(String eventLabel, int totalValue) {
+        this.eventLabel = eventLabel;
+        this.totalValue = totalValue;
+    }
 }

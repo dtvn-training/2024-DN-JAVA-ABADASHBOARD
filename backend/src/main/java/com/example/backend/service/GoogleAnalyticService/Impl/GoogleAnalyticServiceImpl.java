@@ -1,15 +1,14 @@
 package com.example.backend.service.GoogleAnalyticService.Impl;
 
 import com.example.backend.dto.EventDto;
+import com.example.backend.dto.request.ListEventByDayRequest;
 import com.example.backend.dto.request.ReportRequest;
 import com.example.backend.dto.response.PageResponse;
 import com.example.backend.entity.Campaign;
 import com.example.backend.entity.DimensionMaster;
 import com.example.backend.entity.Event;
 import com.example.backend.entity.MetricMaster;
-import com.example.backend.enums.DeletedFlag;
-import com.example.backend.enums.DimensionType;
-import com.example.backend.enums.ErrorCode;
+import com.example.backend.enums.*;
 import com.example.backend.enums.MetricType;
 import com.example.backend.exception.ApiException;
 import com.example.backend.mapper.EventMapper;
@@ -162,6 +161,19 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
             LocalDateTime endDateNew= endDateRaw.atTime(LocalTime.MAX);
             Page<Event> events= eventRepository.findDistinctEventsByEventLabelAndStartDateAndEndDate(eventLabel,startDateNew,endDateNew,pageable);
             return getEventDtoPageResponse(events);
+        }catch (Exception e){
+            throw new ApiException(ErrorCode.INTERNAL_SERVER_ERROR.getStatusCode().value(), e.getMessage());
+        }
+    }
+
+    @Override
+    public List<?> getDataForChartWithDay(ListEventByDayRequest request) {
+        try{
+            if(request.getType()!=null){
+                TimeType timeType= TimeType.findByName(request.getType().toLowerCase());
+
+            }
+            return List.of();
         }catch (Exception e){
             throw new ApiException(ErrorCode.INTERNAL_SERVER_ERROR.getStatusCode().value(), e.getMessage());
         }

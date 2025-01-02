@@ -2,6 +2,8 @@ package com.example.backend.enums;
 
 import lombok.Getter;
 
+import java.util.Date;
+
 @Getter
 public enum DimensionType {
     EventName("eventName"),
@@ -9,7 +11,8 @@ public enum DimensionType {
     Source("source"),
     PageTitle("pageTitle"),
     PagePath("pagePath"),
-    Medium("medium");
+    Medium("medium"),
+    Date("date");
 
     DimensionType(String name){
         this.name=name;

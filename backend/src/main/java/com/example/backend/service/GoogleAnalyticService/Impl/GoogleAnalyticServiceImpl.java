@@ -3,19 +3,15 @@ package com.example.backend.service.GoogleAnalyticService.Impl;
 import com.example.backend.dto.EventDto;
 import com.example.backend.dto.request.ListEventByDayRequest;
 import com.example.backend.dto.request.ReportRequest;
+import com.example.backend.dto.response.EventTableResponse;
+import com.example.backend.dto.response.NumberOfEventResponse;
 import com.example.backend.dto.response.PageResponse;
-import com.example.backend.entity.Campaign;
-import com.example.backend.entity.DimensionMaster;
-import com.example.backend.entity.Event;
-import com.example.backend.entity.MetricMaster;
+import com.example.backend.entity.*;
 import com.example.backend.enums.*;
 import com.example.backend.enums.MetricType;
 import com.example.backend.exception.ApiException;
 import com.example.backend.mapper.EventMapper;
-import com.example.backend.repository.CampaignRepository;
-import com.example.backend.repository.DimensionMasterRepository;
-import com.example.backend.repository.EventRepository;
-import com.example.backend.repository.MetricMasterRepository;
+import com.example.backend.repository.*;
 import com.example.backend.service.GoogleAnalyticService.GoogleAnalyticService;
 import com.google.analytics.data.v1beta.*;
 import lombok.RequiredArgsConstructor;
@@ -27,11 +23,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +43,7 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
     private final CampaignRepository campaignRepository;
     private final EventRepository eventRepository;
     private final EventMapper eventMapper;
-
+    private final PurchaseRevenueRepository purchaseRevenueRepository;
 
     @Override
     public List<Map<String, String>> reportResponse() {
@@ -53,10 +52,11 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
                     RunReportRequest.newBuilder()
                             .setProperty("properties/" + propertyId)
 //                            .addDimensions(Dimension.newBuilder().setName(DimensionType.City.getName()))
-                            .addDimensions(Dimension.newBuilder().setName("month"))
-                            .addDimensions(Dimension.newBuilder().setName(DimensionType.EventName.getName()))
-//                            .addMetrics(Metric.newBuilder().setName(MetricType.ActiveUser.getName()))
-                            .addMetrics(Metric.newBuilder().setName(MetricType.EventCount.getName()))
+                            .addDimensions(Dimension.newBuilder().setName("date"))
+                            .addDimensions(Dimension.newBuilder().setName("source"))
+                            .addDimensions(Dimension.newBuilder().setName("eventName"))
+//                            .addMetrics(Metric.newBuilder().setName(MetricType.EventCount.getName()))
+                            .addMetrics(Metric.newBuilder().setName("purchaseRevenue"))
                             .addDateRanges(DateRange.newBuilder().setStartDate("2024-11-25").setEndDate("today"))
                             .build();
             // Make the request.
@@ -65,10 +65,15 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
             List<Map<String, String>> result = new ArrayList<>();
             for (Row row : response.getRowsList()) {
                 Map<String, String> rowData = new HashMap<>();
-                rowData.put("date", row.getDimensionValues(0).getValue());
+                String rawDate = row.getDimensionValues(0).getValue(); // Giá trị thô "date"
+                String formattedDate = LocalDate.parse(rawDate, DateTimeFormatter.BASIC_ISO_DATE).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                rowData.put("date", formattedDate);
 //                rowData.put("activeUsers", row.getMetricValues(0).getValue());
-                rowData.put("Event name", row.getDimensionValues(1).getValue());
-                rowData.put("Event count", row.getMetricValues(0).getValue());
+                rowData.put("source", row.getDimensionValues(1).getValue());
+                rowData.put("event name", row.getDimensionValues(2).getValue());
+//                rowData.put("event count", row.getMetricValues(0).getValue());
+                rowData.put("purchase Revenue", row.getMetricValues(0).getValue());
+
                 result.add(rowData);
             }
             return result;
@@ -87,12 +92,13 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
             MetricMaster findMetricExist= metricMasterRepository.findByMetricKey(reportRequest.getMetric())
                     .orElseThrow(()-> new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(),"Metric is not found"));
 
-            if(!findDimensionExist.getMetricMasters().contains(findMetricExist)){
-                throw new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(),"Metric is not valid");
+            if(!findDimensionExist.getMetricMasters().contains(findMetricExist)) {
+                throw new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(), "Metric is not valid");
             }
             RunReportRequest request =
                     RunReportRequest.newBuilder()
                             .setProperty("properties/" + propertyId)
+                            .addDimensions(Dimension.newBuilder().setName(DimensionType.Date.getName()))
                             .addDimensions(Dimension.newBuilder().setName(reportRequest.getDimension()))
                             .addMetrics(Metric.newBuilder().setName(reportRequest.getMetric()))
                             .addDateRanges(DateRange.newBuilder().setStartDate(reportRequest.getStartDate()).setEndDate(reportRequest.getEndDate()))
@@ -102,22 +108,58 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
             List<Row> rows = response.getRowsList();
             List<Map<String, String>> result = new ArrayList<>();
             List<Event> saveEvent= new ArrayList<>();
+            List<PurchaseRevenue> savePurchaseRevenue= new ArrayList<>();
             for (Row row : rows) {
                 Map<String, String> rowData = new HashMap<>();
-                rowData.put(reportRequest.getDimension(), row.getDimensionValues(0).getValue());
+                String rawDate = row.getDimensionValues(0).getValue(); // Giá trị thô "date"
+                LocalDate date= LocalDate.parse(rawDate, DateTimeFormatter.BASIC_ISO_DATE);
+                String formattedDate = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                long minSecond = date.atStartOfDay().toEpochSecond(java.time.ZoneOffset.UTC);
+                long maxSecond = date.plusDays(1).atStartOfDay().toEpochSecond(java.time.ZoneOffset.UTC);
+                long randomSecond = ThreadLocalRandom.current().nextLong(minSecond, maxSecond);
+                LocalDateTime dateTime = LocalDateTime.ofEpochSecond(randomSecond, 0, java.time.ZoneOffset.UTC);
+                rowData.put(DimensionType.Date.getName(), formattedDate);
+                rowData.put(reportRequest.getDimension(), row.getDimensionValues(1).getValue());
                 rowData.put(reportRequest.getMetric(), row.getMetricValues(0).getValue());
                 Event event= Event.builder()
                         .campaign(findCampaignExist)
-                        .eventName(row.getDimensionValues(0).getValue())
+                        .eventName(row.getDimensionValues(1).getValue())
                         .eventLabel(findDimensionExist.getDimensionKey())
                         .eventValue(row.getMetricValues(0).getValue())
-                        .timestamp(LocalDateTime.now())
+                        .timestamp(dateTime)
                         .build();
+
                 event.setDeletedFlag(DeletedFlag.ACTIVE);
+                if(row.getDimensionValues(1).getValue().equals("purchase")){
+                    RunReportRequest requestPurchase =
+                            RunReportRequest.newBuilder()
+                                    .setProperty("properties/" + propertyId)
+                                    .addDimensions(Dimension.newBuilder().setName(DimensionType.Date.getName()))
+                                    .addDimensions(Dimension.newBuilder().setName(DimensionType.Source.getName()))
+                                    .addDimensions(Dimension.newBuilder().setName(DimensionType.EventName.getName()))
+                                    .addMetrics(Metric.newBuilder().setName(MetricType.PurchaseRevenue.getName()))
+                                    .addDateRanges(DateRange.newBuilder().setStartDate(formattedDate).setEndDate(formattedDate))
+                                    .build();
+                    // Make the request.
+                    RunReportResponse responsePurchase = analyticsData.runReport(requestPurchase);
+                    List<Row> rowsPurchase = responsePurchase.getRowsList();
+                    for(Row rowPurchase: rowsPurchase) {
+                        double amount = Double.parseDouble(rowPurchase.getMetricValues(0).getValue());
+                        PurchaseRevenue purchaseRevenue= PurchaseRevenue.builder()
+                                .event(event)
+                                .amount(BigDecimal.valueOf(amount))
+                                .source(rowPurchase.getDimensionValues(1).getValue())
+                                .build();
+                        savePurchaseRevenue.add(purchaseRevenue);
+                    }
+
+                }
+
                 saveEvent.add(event);
                 result.add(rowData);
             }
             eventRepository.saveAll(saveEvent);
+            purchaseRevenueRepository.saveAll(savePurchaseRevenue);
             return result;
         }catch (Exception e){
             throw new ApiException(ErrorCode.BAD_REQUEST.getCode(), e.getMessage());
@@ -159,8 +201,10 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
             LocalDate endDateRaw = LocalDate.parse(endDate, dateFormatter);
             LocalDateTime startDateNew= startDateRaw.atStartOfDay();
             LocalDateTime endDateNew= endDateRaw.atTime(LocalTime.MAX);
-            Page<Event> events= eventRepository.findDistinctEventsByEventLabelAndStartDateAndEndDate(eventLabel,startDateNew,endDateNew,pageable);
-            return getEventDtoPageResponse(events);
+            Page<EventTableResponse> eventsTableResponse= eventRepository.findEventsByEventLabelAndTimestampBetween(eventLabel,startDateNew,endDateNew,pageable);
+            List<NumberOfEventResponse> numberOfEventResponses= eventRepository.numberOfEventsByEventLabel(startDateNew,endDateNew);
+            List<Object[]> getEventChartResponse= eventRepository.getEventsForChart(startDateNew,endDateNew);
+            return null;
         }catch (Exception e){
             throw new ApiException(ErrorCode.INTERNAL_SERVER_ERROR.getStatusCode().value(), e.getMessage());
         }

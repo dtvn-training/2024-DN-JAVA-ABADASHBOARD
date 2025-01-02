@@ -7,11 +7,11 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class NumberOfEventResponse {
-    private String eventLabel;
-    private int totalValue;
+    private String eventTitle;
+    private Long totalValue;
 
-    public NumberOfEventResponse(String eventLabel, int totalValue) {
-        this.eventLabel = eventLabel;
+    public NumberOfEventResponse(String eventTitle, Long totalValue) {
+        this.eventTitle = eventTitle;
         this.totalValue = totalValue;
     }
 }

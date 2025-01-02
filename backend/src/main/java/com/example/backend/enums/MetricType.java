@@ -10,7 +10,8 @@ public enum MetricType {
     NewUsers("newUsers"),
     ItemsViewed("itemsViewed"),
     ScreenPageViews("screenPageViews"),
-    Sessions("sessions");
+    Sessions("sessions"),
+    PurchaseRevenue("purchaseRevenue"),;
 
     MetricType(String name){
         this.name=name;

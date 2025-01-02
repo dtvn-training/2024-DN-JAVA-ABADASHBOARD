@@ -13,6 +13,7 @@ public enum ErrorCode {
     CONFLICT(409, "Conflict", HttpStatus.CONFLICT),
     UNPROCESSABLE_ENTITY(422, "Unprocessable Entity", HttpStatus.UNPROCESSABLE_ENTITY),
 
+
     INTERNAL_SERVER_ERROR(500, "Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR),
     NOT_IMPLEMENTED(501, "Not Implemented", HttpStatus.NOT_IMPLEMENTED),
     SERVICE_UNAVAILABLE(503, "Service Unavailable", HttpStatus.SERVICE_UNAVAILABLE),
@@ -31,6 +32,7 @@ public enum ErrorCode {
     SCORE_MIN_1(2012, "Score value must be greater than or equal to 1", HttpStatus.BAD_REQUEST),
     SCORE_MAX_5(2013, "Score value must be less than or equal to 5", HttpStatus.BAD_REQUEST),
     POSITIVE_OR_ZERO(2014, "This field must be greater or equal to 0", HttpStatus.BAD_REQUEST);
+
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.code = code;

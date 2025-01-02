@@ -12,6 +12,7 @@ import com.example.backend.enums.DeletedFlag;
 import lombok.Getter;
 import lombok.Setter;
 
+
 @MappedSuperclass
 @Getter
 @Setter

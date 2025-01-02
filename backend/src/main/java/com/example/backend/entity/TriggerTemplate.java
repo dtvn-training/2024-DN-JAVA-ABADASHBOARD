@@ -23,7 +23,7 @@ public class TriggerTemplate {
     private Long triggerTemplateId;
 
     @NotBlank(message = "key cannot be blank")
-    @Column( nullable = false)
+    @Column(nullable = false)
     private Integer key;
 
     @NotBlank(message = "displayName cannot be blank")

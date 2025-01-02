@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatusCode;
 
 @Getter
 public enum ErrorCode {
-    //code according to httpStatus standard and may be added in the future
     BAD_REQUEST(400, "Bad Request", HttpStatus.BAD_REQUEST),
     UNAUTHORIZED(401, "Unauthorized", HttpStatus.UNAUTHORIZED),
     FORBIDDEN(403, "Forbidden", HttpStatus.FORBIDDEN),
@@ -14,9 +13,26 @@ public enum ErrorCode {
     CONFLICT(409, "Conflict", HttpStatus.CONFLICT),
     UNPROCESSABLE_ENTITY(422, "Unprocessable Entity", HttpStatus.UNPROCESSABLE_ENTITY),
 
+
     INTERNAL_SERVER_ERROR(500, "Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR),
     NOT_IMPLEMENTED(501, "Not Implemented", HttpStatus.NOT_IMPLEMENTED),
-    SERVICE_UNAVAILABLE(503, "Service Unavailable", HttpStatus.SERVICE_UNAVAILABLE);
+    SERVICE_UNAVAILABLE(503, "Service Unavailable", HttpStatus.SERVICE_UNAVAILABLE),
+
+    EXISTED(1002, "Existed", HttpStatus.BAD_REQUEST),
+    PASSWORD_INCORRECT(1999, "Password not correct", HttpStatus.BAD_REQUEST),
+    NOT_BLANK(2001, "This field is mandatory", HttpStatus.BAD_REQUEST),
+    BETWEEN_SIZE(2002, "This field must be between {min} and {max} characters", HttpStatus.BAD_REQUEST),
+    INVALID(2003, "This field is invalid", HttpStatus.BAD_REQUEST),
+    MIN_SIZE(2004, "This field must be at least {min} characters long", HttpStatus.BAD_REQUEST),
+    DATE_FUTURE(2008, "Date must be a future date", HttpStatus.BAD_REQUEST),
+    NOT_NULL(2009, "This field must not be null", HttpStatus.BAD_REQUEST),
+    POSITIVE(2010, "This field must be greater than 0", HttpStatus.BAD_REQUEST),
+    MAX_SIZE(2011, "This field must be at max {max} characters long", HttpStatus.BAD_REQUEST),
+    DATE_FUTURE_OR_PRESENT(2008, "Date must be a future date or today", HttpStatus.BAD_REQUEST),
+    SCORE_MIN_1(2012, "Score value must be greater than or equal to 1", HttpStatus.BAD_REQUEST),
+    SCORE_MAX_5(2013, "Score value must be less than or equal to 5", HttpStatus.BAD_REQUEST),
+    POSITIVE_OR_ZERO(2014, "This field must be greater or equal to 0", HttpStatus.BAD_REQUEST);
+
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.code = code;

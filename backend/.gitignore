@@ -33,3 +33,5 @@ src/main/resources/*.json
 ### VS Code ###
 .vscode/
 .env
+
+src/main/resources/services-account.json

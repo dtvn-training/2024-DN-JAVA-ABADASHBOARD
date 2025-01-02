@@ -8,7 +8,6 @@ import lombok.experimental.FieldDefaults;
 import java.util.Set;
 
 @Entity
-@ToString
 @Table(name = "db_template_master")
 @Getter
 @Setter
@@ -22,7 +21,7 @@ public class TemplateMaster {
     @Column(name = "template_id")
     Long template_id;
 
-    @NotNull(message = "type cannot be null")
+    @NotNull(message = "NOT_NULL")
     @Column(name = "type", nullable = false)
     String type;
 

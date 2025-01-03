@@ -23,26 +23,26 @@ public class Trigger extends AbstractDefault {
         @Column(name = "trigger_id")
         private Long triggerId;
 
-        @NotNull(message = "path cannot be null")
+        @NotNull(message = "NOT_NULL")
         @Size(max = 255, message = "path cannot exceed 255 characters.")
         @Column(name = "path", nullable = false)
         private String path;
 
-        @NotNull(message = "accountId cannot be null")
+        @NotNull(message = "NOT_NULL")
+        @Size(max = 20, message = "accountId cannot exceed 20 characters.")
         @Column(name = "account_id", nullable = false)
         private String accountId;
 
-        @NotNull(message = "containerId cannot be null")
+        @NotNull(message = "NOT_NULL")
         @Size(max = 20, message = "containerId cannot exceed 20 characters.")
         @Column(name = "container_id", nullable = false)
         private String containerId;
 
-        @NotNull(message = "workspaceId cannot be null")
+        @NotNull(message = "NOT_NULL")
         @Size(max = 20, message = "workspaceId cannot exceed 20 characters.")
         @Column(name = "workspace_id", nullable = false)
         private String workspaceId;
 
-        @NotNull(message = "triggerGTMId cannot be null")
         @Size(max = 20, message = "trigger gtm id cannot exceed 20 characters.")
         @Column(name = "trigger_gtm_id", nullable = false)
         private String triggerGTMId;

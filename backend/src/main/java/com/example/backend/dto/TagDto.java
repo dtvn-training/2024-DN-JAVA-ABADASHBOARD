@@ -2,8 +2,10 @@ package com.example.backend.dto;
 
 import com.example.backend.entity.ParameterMaster;
 import com.example.backend.entity.TemplateMaster;
+import com.example.backend.entity.Trigger;
 import com.example.backend.enums.TagStatus;
 import com.google.api.services.tagmanager.model.TagConsentSetting;
+import jakarta.persistence.ManyToMany;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;

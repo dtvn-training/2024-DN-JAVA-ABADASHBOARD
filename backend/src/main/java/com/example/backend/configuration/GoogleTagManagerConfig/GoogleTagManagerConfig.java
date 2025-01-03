@@ -9,6 +9,7 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.tagmanager.TagManager;
 import com.google.api.services.tagmanager.TagManagerScopes;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,12 +21,16 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class GoogleTagManagerConfig {
     private final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
+    @Value("${google-tag-manager.services_account}")
+    private String googleTagServiceAccount;
+    @Value("${google-tag-manager.application_name}")
+    private String googleTagApplicationName;
+
     @Deprecated
     private Credential authorize() throws Exception {
         // Load service account key JSON file
-        String SERVICES_ACCOUNT = "/services-account.json";
         InputStream serviceAccountStream = Objects.requireNonNull(
-                SpringBootApplication.class.getResourceAsStream(SERVICES_ACCOUNT)
+                SpringBootApplication.class.getResourceAsStream(googleTagServiceAccount)
         );
 
         // Create GoogleCredential with the service account
@@ -40,9 +45,8 @@ public class GoogleTagManagerConfig {
 
             // Authorization flow.
             Credential credential = authorize();
-            String APPLICATION_NAME = "Doan65003";
             return new TagManager.Builder(httpTransport, JSON_FACTORY, credential)
-                    .setApplicationName(APPLICATION_NAME).build();
+                    .setApplicationName(googleTagApplicationName).build();
         } catch (Exception e) {
             e.printStackTrace();
             throw e;

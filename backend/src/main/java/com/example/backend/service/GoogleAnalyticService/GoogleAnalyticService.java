@@ -16,6 +16,6 @@ public interface GoogleAnalyticService {
     List<Map<String, String>> reportResponse();
     List<Map<String, String>> saveEventIntoDatabase(ReportRequest request);
     PageResponse<EventDto> getEvents(int pageNum, int pageSize, String eventLabel);
-    PageResponse<EventDto> getEventsByStartDateAndEndDate(String startDate, String endDate, String eventLabel,int pageNum, int pageSize);
+    Map<String, Object> getEventsByStartDateAndEndDate(String startDate, String endDate, String eventLabel,int pageNum, int pageSize);
     List<?> getDataForChartWithDay(ListEventByDayRequest request);
 }

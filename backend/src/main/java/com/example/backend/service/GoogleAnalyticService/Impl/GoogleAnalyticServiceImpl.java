@@ -189,7 +189,7 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
     }
 
     @Override
-    public PageResponse<EventDto> getEventsByStartDateAndEndDate(String startDate,
+    public Map<String, Object> getEventsByStartDateAndEndDate(String startDate,
                                                                  String endDate,
                                                                  String eventLabel,
                                                                  int pageNum,
@@ -204,7 +204,11 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
             Page<EventTableResponse> eventsTableResponse= eventRepository.findEventsByEventLabelAndTimestampBetween(eventLabel,startDateNew,endDateNew,pageable);
             List<NumberOfEventResponse> numberOfEventResponses= eventRepository.numberOfEventsByEventLabel(startDateNew,endDateNew);
             List<Object[]> getEventChartResponse= eventRepository.getEventsForChart(startDateNew,endDateNew);
-            return null;
+            Map<String, Object> response= new HashMap<>();
+            response.put("eventTable", eventsTableResponse);
+            response.put("numberOfEvent",numberOfEventResponses);
+            response.put("chartEvent", getEventChartResponse);
+            return response;
         }catch (Exception e){
             throw new ApiException(ErrorCode.INTERNAL_SERVER_ERROR.getStatusCode().value(), e.getMessage());
         }

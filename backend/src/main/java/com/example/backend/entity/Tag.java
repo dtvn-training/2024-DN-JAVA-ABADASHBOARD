@@ -8,7 +8,6 @@ import lombok.experimental.FieldDefaults;
 import java.util.Set;
 
 @Entity
-
 @Table(name = "db_tag")
 @Getter
 @Setter
@@ -25,31 +24,31 @@ public class Tag extends AbstractDefault {
     @Column(name = "tag_gtm_id", length = 20,unique = true)
     String tagGtmId;
 
-    @NotBlank(message = "tagName cannot be blank")
+    @NotBlank(message = "NOT_BLANK")
     @Column(name = "tag_name", nullable = false, unique = true)
     String tagName;
 
-    @NotNull(message = "type cannot be null")
+    @NotNull(message = "NOT_NULL")
     @Column(name = "type", nullable = false)
     String type;
 
-    @NotNull(message = "status cannot be null")
+    @NotNull(message = "NOT_NULL")
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, columnDefinition = "varchar(20) default 'SAVE'")
     TagStatus status;
 
-    @NotNull(message = "accountId cannot be null")
-    @Column(name = "account_id", nullable = false)
+    @NotNull(message = "NOT_NULL")
+    @Column(name = "account_id")
     String accountId;
 
-    @NotNull(message = "containerId cannot be null")
-    @Column(name = "container_id", nullable = false)
+    @NotNull(message = "NOT_NULL")
+    @Column(name = "container_id")
     String containerId;
 
     @Column(name = "finger_print")
     String fingerPrint;
 
-    @NotNull(message = "workspaceId cannot be null")
+    @NotNull(message = "NOT_NULL")
     @Column(name = "workspace_id")
     String workspaceId;
 

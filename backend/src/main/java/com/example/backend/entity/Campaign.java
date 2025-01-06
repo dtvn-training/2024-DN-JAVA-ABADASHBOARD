@@ -57,4 +57,7 @@ public class Campaign extends AbstractDefault {
 
     @OneToMany(mappedBy = "campaign", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     List<AdsGroup> adsGroups;
+
+    @OneToMany(mappedBy = "campaign", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    List<Event> events;
 }

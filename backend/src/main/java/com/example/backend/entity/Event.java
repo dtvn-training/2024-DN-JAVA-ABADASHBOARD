@@ -9,6 +9,7 @@ import lombok.experimental.FieldDefaults;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "db_event")
@@ -45,4 +46,7 @@ public class Event extends AbstractDefault {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "campaign_id", referencedColumnName = "campaign_id")
     Campaign campaign;
+
+    @OneToMany(mappedBy = "event")
+    private List<PurchaseRevenue> purchaseRevenues;
 }

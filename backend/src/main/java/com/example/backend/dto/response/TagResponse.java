@@ -42,7 +42,7 @@ public class TagResponse {
     public TagResponse(Long tagId, @NotNull(message = "NOT_NULL") String accountId, @NotNull(message = "NOT_NULL") String containerId,
                        @NotNull(message = "NOT_NULL") String workspaceId, @Null TagConsentSetting tagConsentSetting,String status ,String fingerPrint,
                        @NotBlank(message = "NOT_BLANK") String tagName, String tagGtmId, @NotNull(message = "NOT_NULL") String type,
-                       List<ParameterDto> parameters, LocalDateTime createdAt, LocalDateTime updatedAt, String createdBy,
+                       List<ParameterDto> parameters,List<String> positiveTriggerId,List<String> negativeTriggerId, LocalDateTime createdAt, LocalDateTime updatedAt, String createdBy,
                        String updatedBy, @NotNull(message = "NOT_NULL") DeletedFlag deletedFlag
     ) {
         this.tagId = tagId;
@@ -56,6 +56,8 @@ public class TagResponse {
         this.tagGtmId = tagGtmId;
         this.type = type;
         this.parameters = parameters;
+        this.positiveTriggerId = positiveTriggerId;
+        this.negativeTriggerId = negativeTriggerId;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.createdBy = createdBy;

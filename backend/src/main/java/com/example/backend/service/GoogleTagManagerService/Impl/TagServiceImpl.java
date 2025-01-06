@@ -1,10 +1,7 @@
 package com.example.backend.service.GoogleTagManagerService.Impl;
 
 import com.example.backend.dto.ParameterDto;
-import com.example.backend.dto.TagDto;
-import com.example.backend.dto.request.CreateTagRequest;
-import com.example.backend.dto.request.ListTagRequestGTM;
-import com.example.backend.dto.request.ParameterRequest;
+import com.example.backend.dto.request.*;
 import com.example.backend.dto.response.ApiResponse;
 import com.example.backend.dto.response.PageResponse;
 import com.example.backend.dto.response.TagResponse;
@@ -19,14 +16,17 @@ import com.example.backend.service.GoogleTagManagerService.TagService;
 import com.google.api.services.tagmanager.TagManager;
 import com.google.api.services.tagmanager.model.ListTagsResponse;
 import com.google.api.services.tagmanager.model.Parameter;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -42,6 +42,7 @@ public class TagServiceImpl implements TagService {
     private final TagRepository tagRepository;
     private final TagMapper tagMapper;
     private final TriggerRepository triggerRepository;
+    private final TagTriggerRepository tagTriggerRepository;
     private final TriggerTemplateRepository triggerTemplateRepository;
 
 
@@ -80,8 +81,7 @@ public class TagServiceImpl implements TagService {
     private Tag saveTag(com.google.api.services.tagmanager.model.Tag tag,
                                                    CreateTagRequest request,
                                                    TemplateMaster templateMaster,
-                                                   Set<ParameterMaster> parameterMasters,
-                                                   Set<Trigger> triggers
+                                                   Set<ParameterMaster> parameterMasters
     ){
         Set<TemplateMaster> templateMasterSet = new LinkedHashSet<>();
         templateMasterSet.add(templateMaster);
@@ -100,18 +100,7 @@ public class TagServiceImpl implements TagService {
                 .build();
         entity.setDeletedFlag(DeletedFlag.ACTIVE);
         entity.setCreatedBy("Hieu");
-        if(!triggers.isEmpty()){
-            entity.setTriggers(triggers);
-        }
         return tagRepository.save(entity);
-    }
-
-    private Trigger checkTriggerValid(String triggerId){
-        try{
-            return triggerRepository.findByTriggerGTMId(triggerId).orElseThrow(()->new ApiException(ErrorCode.BAD_REQUEST.getCode(), "TriggerId not exist"));
-        }catch (Exception e){
-            throw new ApiException(ErrorCode.BAD_REQUEST.getCode(), e.getMessage());
-        }
     }
 
     private PageResponse<TagResponse> createPageResponse(Page<Tag> pageData, List<TagResponse> tagResponses) {
@@ -123,6 +112,70 @@ public class TagServiceImpl implements TagService {
                 .data(tagResponses)
                 .build();
     }
+
+    private com.google.api.services.tagmanager.model.Tag createFiringTriggerId(List<TagTrigger> tagTriggerList,
+                                                                               List<String> firingTriggerId,
+                                                                               com.google.api.services.tagmanager.model.Tag tag,
+                                                                               @Nullable Tag findTag
+    ) {
+        if(firingTriggerId!= null && !firingTriggerId.isEmpty()){
+            for(String triggerId : firingTriggerId){
+                Trigger findTrigger= triggerRepository.findByTriggerGTMId(triggerId).orElseThrow(()->new ApiException(ErrorCode.BAD_REQUEST.getCode(), "Trigger " + triggerId + " does not exist"));
+                TagTrigger tagTrigger = new TagTrigger();
+                tagTrigger.setTrigger(findTrigger);
+                if(findTag!=null && findTag.getTagTriggers().contains(tagTrigger)){
+                    continue;
+                }
+                tagTrigger.setPositive(true);
+                tagTriggerList.add(tagTrigger);
+            }
+            tag.setFiringTriggerId(firingTriggerId);
+        }
+        return tag;
+    }
+
+    private com.google.api.services.tagmanager.model.Tag createBlockingTriggerId(List<TagTrigger> tagTriggerList,
+                                                                               List<String> blockingTriggerId,
+                                                                               com.google.api.services.tagmanager.model.Tag tag,
+                                                                               @Nullable Tag findTag
+    ) {
+        if(blockingTriggerId!= null && !blockingTriggerId.isEmpty()){
+            for(String triggerId : blockingTriggerId){
+                Trigger findTrigger= triggerRepository.findByTriggerGTMId(triggerId).orElseThrow(()->new ApiException(ErrorCode.BAD_REQUEST.getCode(), "Trigger " + triggerId + " does not exist"));
+                TagTrigger tagTrigger = new TagTrigger();
+                tagTrigger.setTrigger(findTrigger);
+                if(findTag!=null && findTag.getTagTriggers().contains(tagTrigger)){
+                    continue;
+                }
+                tagTrigger.setPositive(false);
+                tagTriggerList.add(tagTrigger);
+            }
+            tag.setFiringTriggerId(blockingTriggerId);
+        }
+        return tag;
+    }
+
+    private com.google.api.services.tagmanager.model.Tag getTagOnGTM(String accountId, String containerId, String workspaceId,String tagId){
+        try{
+            String parent = String.format("accounts/%s/containers/%s/workspaces/%s/tags/%s", accountId, containerId,workspaceId,tagId);
+            return tagManager.accounts().containers().workspaces().tags().get(parent).execute();
+        }catch (Exception e){
+            throw new ApiException(ErrorCode.BAD_REQUEST.getCode(), "Unable to get tag on GTM");
+        }
+    }
+
+    private void removeTriggerFromGTM(com.google.api.services.tagmanager.model.Tag tag, List<String> triggerIds){
+        if (!triggerIds.isEmpty()) {
+            List<String> firingTriggerIds = new ArrayList<>(tag.getFiringTriggerId());
+            firingTriggerIds.removeAll(triggerIds);
+            tag.setFiringTriggerId(firingTriggerIds);
+
+            List<String> blockingTriggerIds = new ArrayList<>(tag.getBlockingTriggerId());
+            blockingTriggerIds.removeAll(triggerIds);
+            tag.setBlockingTriggerId(blockingTriggerIds);
+        }
+    }
+
 
     @Override
     public ApiResponse<TagResponse> CreateTag(CreateTagRequest request) {
@@ -158,29 +211,38 @@ public class TagServiceImpl implements TagService {
                 }
             }
             tag.setParameter(parameters);
-            Set<Trigger> triggers= new LinkedHashSet<>();
-            if(request.getPositiveTriggerId() != null && !request.getPositiveTriggerId().isEmpty()){
-                for(String triggerId : request.getPositiveTriggerId()){
-                    Optional<TriggerTemplate> getTrigger= triggerTemplateRepository.findByKey(Integer.parseInt(triggerId));
-                    if(getTrigger.isEmpty()){
-                        throw new ApiException(ErrorCode.BAD_REQUEST.getCode(), "Trigger " + triggerId + " does not exist");
-                    }
-                }
-                tag.setFiringTriggerId(request.getPositiveTriggerId());
-            }
-
-            if(request.getBlockingTriggerId() != null && !request.getBlockingTriggerId().isEmpty()){
-                for(String triggerId : request.getBlockingTriggerId()){
-                    Trigger checkTriggerExist= checkTriggerValid(triggerId);
-                    triggers.add(checkTriggerExist);
-                }
-                tag.setBlockingTriggerId(request.getBlockingTriggerId());
-            }
             if(request.getConsentSetting()!=null) tag.setConsentSettings(request.getConsentSetting());
+            List<TagTrigger> tagTriggers= new ArrayList<>();
+            tag= createFiringTriggerId(tagTriggers,request.getPositiveTriggerId(),tag,null);
+            tag= createBlockingTriggerId(tagTriggers,request.getBlockingTriggerId(),tag,null);
+//            if(request.getPositiveTriggerId() != null && !request.getPositiveTriggerId().isEmpty()){
+//                for(String triggerId : request.getPositiveTriggerId()){
+//                    Trigger getTrigger= triggerRepository.findByTriggerGTMId(triggerId).orElseThrow(()->new ApiException(ErrorCode.BAD_REQUEST.getCode(), "Trigger " + triggerId + " does not exist"));
+//                    TagTrigger tagTrigger = new TagTrigger();
+//                    tagTrigger.setTrigger(getTrigger);
+//                    tagTrigger.setPositive(true);
+//                    tagTriggers.add(tagTrigger);
+//                }
+//                tag.setFiringTriggerId(request.getPositiveTriggerId());
+//            }
+//            if(request.getBlockingTriggerId() != null && !request.getBlockingTriggerId().isEmpty()){
+//                for(String triggerId : request.getBlockingTriggerId()){
+//                    Trigger getTrigger= triggerRepository.findByTriggerGTMId(triggerId).orElseThrow(()->new ApiException(ErrorCode.BAD_REQUEST.getCode(), "Trigger " + triggerId + " does not exist"));
+//                    TagTrigger tagTrigger = new TagTrigger();
+//                    tagTrigger.setTrigger(getTrigger);
+//                    tagTrigger.setPositive(false);
+//                    tagTriggers.add(tagTrigger);
+//                }
+//                tag.setBlockingTriggerId(request.getBlockingTriggerId());
+//            }
             if(TagStatus.SAVE_AND_PUSH.equals(request.getStatus())){
                 tag= tagManager.accounts().containers().workspaces().tags().create(parent,tag).execute();
             }
-            Tag tagEntity=saveTag(tag,request, templateMaster, parameterMasters,triggers);
+            Tag tagEntity=saveTag(tag,request, templateMaster, parameterMasters);
+            for(TagTrigger tagTrigger : tagTriggers){
+                tagTrigger.setTag(tagEntity);
+                tagTriggerRepository.save(tagTrigger);
+            }
             TagResponse convertCreateTagRes= covertTagToTagResponse(tag,request);
             convertCreateTagRes.setTagId(tagEntity.getTagId());
             return createResponse(TagResponse.class, 200, "Create tag success", convertCreateTagRes);
@@ -190,14 +252,39 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
-    public ApiResponse<?> updatePushTagOnGTM(TagDto tagDto) {
+    @Transactional
+    public ApiResponse<?> updatePushTagOnGTM(UpdateTagRequest request) {
         try{
-            Optional<com.example.backend.entity.Tag> findTagExist= tagRepository.findByTagName(tagDto.getTagName());
+            Optional<Tag> findTagExist= tagRepository.findByTagName(request.getTagName());
             if(findTagExist.isPresent()){
-                com.example.backend.entity.Tag findTag= findTagExist.get();
-                findTag= tagMapper.convertDtoToEntity(tagDto,findTag);
-                Set<Trigger> filterTrigger= findTag.getTriggers();
-
+                Tag findTag= findTagExist.get();
+                com.google.api.services.tagmanager.model.Tag tag;
+                if(request.getTagGtmId()!=null){
+                    tag= getTagOnGTM(request.getAccountId(),request.getContainerId(),request.getWorkspaceId(),request.getTagGtmId());
+                }else{
+                    tag= new com.google.api.services.tagmanager.model.Tag();
+                }
+                tag.setName(findTag.getTagName());
+                tag.setType(findTag.getType());
+                List<TagTrigger> tagTriggers= new ArrayList<>();
+                tag=createFiringTriggerId(tagTriggers,request.getPositiveTriggerId(),tag,findTag);
+                tag=createBlockingTriggerId(tagTriggers,request.getBlockingTriggerId(),tag,findTag);
+                if(request.getRemoveTriggerId()!=null && !request.getRemoveTriggerId().isEmpty()){
+                    for(String triggerId : request.getRemoveTriggerId()){
+                        Trigger findTrigger= triggerRepository.findByTriggerGTMId(triggerId).orElseThrow(()->
+                                new ApiException(ErrorCode.BAD_REQUEST.getCode(), "Trigger " + triggerId + " does not exist")
+                        );
+                        Long deleteTagTrigger= tagTriggerRepository.deleteByTrigger(findTrigger);
+                        if(deleteTagTrigger==0){
+                            throw new ApiException(ErrorCode.BAD_REQUEST.getCode(), "Trigger " + triggerId + " does not exist");
+                        }
+                    }
+                    removeTriggerFromGTM(tag, request.getRemoveTriggerId());
+                }
+                if(request.getTagGtmId()!=null){
+                    String parent = String.format("accounts/%s/containers/%s/workspaces/%s/tags/%s", accountId, request.getContainerId(),request.getWorkspaceId(),request.getTagGtmId());
+                    tagManager.accounts().containers().workspaces().tags().update(parent,tag).execute();
+                }
             }
             return null;
         }catch (Exception e){
@@ -237,6 +324,23 @@ public class TagServiceImpl implements TagService {
     public TagResponse getTagById(Long id) {
         // Create a Pageable object for pagination
        return null;
+    }
+
+    @Override
+    public ResponseEntity<?> createTrigger(CreateTriggerRequest request) throws IOException {
+        String parent = String.format("accounts/%s/containers/%s/workspaces/%s", accountId, 201397027, 2);
+        com.google.api.services.tagmanager.model.Trigger newTrigger = new com.google.api.services.tagmanager.model.Trigger()
+                .setName(request.getTriggerName())
+                .setType(request.getTriggerType())  // Kiểu trigger, ví dụ: PAGEVIEW, CLICK, FORM_SUBMISSION
+                .setParameter(null); // Thêm các tham số nếu cần
+
+        com.google.api.services.tagmanager.model.Trigger createdTrigger = tagManager.accounts().containers()
+                .workspaces().triggers()
+                .create(parent, newTrigger)
+                .execute();
+
+        System.out.println("Trigger created with ID: " + createdTrigger.getTriggerId());
+        return ResponseEntity.ok(createdTrigger.getTriggerId());
     }
 
     @NotNull

@@ -64,7 +64,7 @@ public class GoogleAnalyticController {
     @GetMapping("/get-all-events-by-time")
     public ApiResponse<Map<String, Object>> getEventsOfGoogleAnalyticByStartAndEndDate(@RequestParam(value = "pageNum", defaultValue = "0") int pageNum,
                                                                          @RequestParam(value = "pageSize", defaultValue = "6") int pageSize,
-                                                                         @RequestParam("eventLabel") String eventLabel,
+                                                                         @RequestParam(value = "eventLabel", defaultValue = "eventName") String eventLabel,
                                                                          @RequestParam(value = "startDate", defaultValue = "2024-12-01") String startDate,
                                                                          @RequestParam(value = "endDate", defaultValue = "2024-12-31") String endDate
     ) {

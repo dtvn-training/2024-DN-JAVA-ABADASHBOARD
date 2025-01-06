@@ -1,6 +1,5 @@
 package com.example.backend.repository;
 
-import com.example.backend.dto.EventDto;
 import com.example.backend.dto.response.EventChartResponse;
 import com.example.backend.dto.response.EventTableResponse;
 import com.example.backend.dto.response.NumberOfEventResponse;
@@ -60,14 +59,16 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     @Query("""
         SELECT
-            date_trunc('day',e.timestamp) as time_event,
-            CASE
+            new com.example.backend.dto.response.EventChartResponse(
+                date_trunc('day',e.timestamp),
+                CASE
                 WHEN e.eventName = 'purchase' THEN 'purchase'
                 WHEN e.eventName = 'form_start' THEN 'form submission'
                 WHEN e.eventLabel = 'city' THEN 'active users'
                 ELSE 'other'
-                END AS event_type,
-            SUM(CAST(e.eventValue AS Long)) AS event_value
+                END,
+                SUM(CAST(e.eventValue AS Long))
+            )
         FROM
             Event e
         WHERE
@@ -77,8 +78,13 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             e.eventLabel = 'city'
             )
         GROUP BY
-            time_event,
-            event_type
+            date_trunc('day',e.timestamp),
+            CASE
+                WHEN e.eventName = 'purchase' THEN 'purchase'
+                WHEN e.eventName = 'form_start' THEN 'form submission'
+                WHEN e.eventLabel = 'city' THEN 'active users'
+                ELSE 'other'
+                END
         ORDER BY
             date_trunc('day',e.timestamp),
             CASE
@@ -88,6 +94,6 @@ public interface EventRepository extends JpaRepository<Event, Long> {
                 ELSE 'other'
                 END
 """)
-    List<Object[]> getEventsForChart(@Param("startDate") LocalDateTime startDate,@Param("endDate") LocalDateTime endDate);
+    List<EventChartResponse> getEventsForChart(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
 }

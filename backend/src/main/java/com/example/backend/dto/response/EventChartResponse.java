@@ -14,9 +14,9 @@ import java.time.LocalDateTime;
 public class EventChartResponse {
     private LocalDateTime time;
     private String eventTitle;
-    private String eventValue;
+    private Long eventValue;
 
-    public EventChartResponse(LocalDateTime time, String eventTitle, String eventValue) {
+    public EventChartResponse(LocalDateTime time, String eventTitle, Long eventValue) {
         this.time = time;
         this.eventTitle = eventTitle;
         this.eventValue = eventValue;

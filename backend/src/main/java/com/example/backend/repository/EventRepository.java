@@ -96,4 +96,6 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 """)
     List<EventChartResponse> getEventsForChart(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
+    @Query("select e from Event e where e.timestamp between :startDate and :endDate ")
+    List<Event> getALlEventsByTimestampBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 }

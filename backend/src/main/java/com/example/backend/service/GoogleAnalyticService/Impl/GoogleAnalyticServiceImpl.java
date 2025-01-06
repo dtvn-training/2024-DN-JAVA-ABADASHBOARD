@@ -230,4 +230,79 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
         }
     }
 
+    @Override
+    public List<Event> getReportFromGA4MapToEvent(String dimension, String metric, String campaignName) {
+        try{
+            Campaign findCampaignExist= campaignRepository.findByCampaignName(campaignName)
+                    .orElseThrow(()->new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(),"Campaign not found"));
+            DimensionMaster findDimensionExist= dimensionMasterRepository.findByDimensionKey(dimension)
+                    .orElseThrow(()-> new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(),"Dimension is not found"));
+            MetricMaster findMetricExist= metricMasterRepository.findByMetricKey(metric)
+                    .orElseThrow(()-> new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(),"Metric is not found"));
+
+            if(!findDimensionExist.getMetricMasters().contains(findMetricExist)) {
+                throw new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(), "Metric is not valid");
+            }
+            LocalDateTime startDate= LocalDateTime.now();
+            LocalDateTime endDate= startDate.minusDays(3);
+            String startDateNew= startDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            String endDateNew= endDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            RunReportRequest request =
+                    RunReportRequest.newBuilder()
+                            .setProperty("properties/" + propertyId)
+                            .addDimensions(Dimension.newBuilder().setName(DimensionType.Date.getName()))
+                            .addDimensions(Dimension.newBuilder().setName(dimension))
+                            .addMetrics(Metric.newBuilder().setName(metric))
+                            .addDateRanges(DateRange.newBuilder().setStartDate(startDateNew).setEndDate(endDateNew))
+                            .build();
+            RunReportResponse response = analyticsData.runReport(request);
+            List<Row> rows = response.getRowsList();
+            List<Event> events= new ArrayList<>();
+            for (Row row : rows) {
+                String rawDate = row.getDimensionValues(0).getValue(); // Giá trị thô "date"
+                LocalDate date= LocalDate.parse(rawDate, DateTimeFormatter.BASIC_ISO_DATE);
+                String formattedDate = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                long minSecond = date.atStartOfDay().toEpochSecond(java.time.ZoneOffset.UTC);
+                long maxSecond = date.plusDays(1).atStartOfDay().toEpochSecond(java.time.ZoneOffset.UTC);
+                long randomSecond = ThreadLocalRandom.current().nextLong(minSecond, maxSecond);
+                LocalDateTime dateTime = LocalDateTime.ofEpochSecond(randomSecond, 0, java.time.ZoneOffset.UTC);
+                Event event= Event.builder()
+                        .campaign(findCampaignExist)
+                        .eventName(row.getDimensionValues(1).getValue())
+                        .eventLabel(findDimensionExist.getDimensionKey())
+                        .eventValue(row.getMetricValues(0).getValue())
+                        .timestamp(dateTime)
+                        .build();
+                event.setDeletedFlag(DeletedFlag.ACTIVE);
+                if(row.getDimensionValues(1).getValue().equals("purchase")){
+                    RunReportRequest requestPurchase =
+                            RunReportRequest.newBuilder()
+                                    .setProperty("properties/" + propertyId)
+                                    .addDimensions(Dimension.newBuilder().setName(DimensionType.Date.getName()))
+                                    .addDimensions(Dimension.newBuilder().setName(DimensionType.Source.getName()))
+                                    .addDimensions(Dimension.newBuilder().setName(DimensionType.EventName.getName()))
+                                    .addMetrics(Metric.newBuilder().setName(MetricType.PurchaseRevenue.getName()))
+                                    .addDateRanges(DateRange.newBuilder().setStartDate(formattedDate).setEndDate(formattedDate))
+                                    .build();
+                    // Make the request.
+                    RunReportResponse responsePurchase = analyticsData.runReport(requestPurchase);
+                    List<Row> rowsPurchase = responsePurchase.getRowsList();
+                    for(Row rowPurchase: rowsPurchase) {
+                        double amount = Double.parseDouble(rowPurchase.getMetricValues(0).getValue());
+                        PurchaseRevenue purchaseRevenue= PurchaseRevenue.builder()
+                                .event(event)
+                                .amount(BigDecimal.valueOf(amount))
+                                .source(rowPurchase.getDimensionValues(1).getValue())
+                                .build();
+                        event.getPurchaseRevenues().add(purchaseRevenue);
+                    }
+                }
+                events.add(event);
+            }
+            return events;
+        }catch (Exception e){
+            throw new ApiException(ErrorCode.INTERNAL_SERVER_ERROR.getStatusCode().value(), e.getMessage());
+        }
+    }
+
 }

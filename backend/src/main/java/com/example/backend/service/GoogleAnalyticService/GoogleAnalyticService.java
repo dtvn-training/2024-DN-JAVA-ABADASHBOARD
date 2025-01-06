@@ -18,4 +18,5 @@ public interface GoogleAnalyticService {
     PageResponse<EventDto> getEvents(int pageNum, int pageSize, String eventLabel);
     Map<String, Object> getEventsByStartDateAndEndDate(String startDate, String endDate, String eventLabel,int pageNum, int pageSize);
     List<?> getDataForChartWithDay(ListEventByDayRequest request);
+    List<Event> getReportFromGA4MapToEvent(String dimension, String metric, String campaignName);
 }

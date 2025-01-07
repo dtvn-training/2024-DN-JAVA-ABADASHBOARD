@@ -11,8 +11,11 @@ public enum DimensionType {
     Source("source"),
     PageTitle("pageTitle"),
     PagePath("pagePath"),
+    FirstUserDefaultChannelGroup("firstUserDefaultChannelGroup"),
+    TransactionId("transactionId"),
     Medium("medium"),
-    Date("date");
+    Date("date"),
+    SessionMedium("sessionMedium");
 
     DimensionType(String name){
         this.name=name;

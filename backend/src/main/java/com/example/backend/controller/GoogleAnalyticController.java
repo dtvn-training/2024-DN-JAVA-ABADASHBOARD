@@ -3,6 +3,7 @@ package com.example.backend.controller;
 import com.example.backend.dto.EventDto;
 import com.example.backend.dto.request.ReportRequest;
 import com.example.backend.dto.response.ApiResponse;
+import com.example.backend.dto.response.EventTableResponse;
 import com.example.backend.dto.response.PageResponse;
 import com.example.backend.enums.ErrorCode;
 import com.example.backend.exception.ApiException;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -70,6 +72,22 @@ public class GoogleAnalyticController {
     ) {
         try{
             Map<String, Object> response= googleAnalyticService.getEventsByStartDateAndEndDate(startDate,endDate,eventLabel,pageNum,pageSize);
+            return createResponse(response);
+        }catch (Exception e){
+            throw new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(),e.getMessage());
+        }
+    }
+
+    @GetMapping("/get-events-by-medium")
+    public ApiResponse<PageResponse<EventTableResponse>> getEventsOfGoogleAnalyticByMedium(@RequestParam(value = "pageNum", defaultValue = "0") int pageNum,
+                                                                                       @RequestParam(value = "pageSize", defaultValue = "6") int pageSize,
+                                                                                       @RequestParam(value = "eventLabel", defaultValue = "eventName") String eventLabel,
+                                                                                       @RequestParam(value = "startDate", defaultValue = "2024-12-01") String startDate,
+                                                                                       @RequestParam(value = "endDate", defaultValue = "2024-12-31") String endDate,
+                                                                                        @RequestParam(value = "mediumName", defaultValue = "organic") String mediumName
+    ) {
+        try{
+            PageResponse<EventTableResponse> response= googleAnalyticService.getEventByMedium(mediumName,pageNum,pageSize, eventLabel,startDate,endDate);
             return createResponse(response);
         }catch (Exception e){
             throw new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(),e.getMessage());

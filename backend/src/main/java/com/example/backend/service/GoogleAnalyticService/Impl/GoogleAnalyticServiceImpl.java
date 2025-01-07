@@ -1,7 +1,6 @@
 package com.example.backend.service.GoogleAnalyticService.Impl;
 
 import com.example.backend.dto.EventDto;
-import com.example.backend.dto.request.ListEventByDayRequest;
 import com.example.backend.dto.request.ReportRequest;
 import com.example.backend.dto.response.EventChartResponse;
 import com.example.backend.dto.response.EventTableResponse;
@@ -21,18 +20,19 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -46,6 +46,7 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
     private final EventRepository eventRepository;
     private final EventMapper eventMapper;
     private final PurchaseRevenueRepository purchaseRevenueRepository;
+    private final MediumRepository mediumRepository;
 
     @Override
     public List<Map<String, String>> reportResponse() {
@@ -55,10 +56,10 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
                             .setProperty("properties/" + propertyId)
 //                            .addDimensions(Dimension.newBuilder().setName(DimensionType.City.getName()))
                             .addDimensions(Dimension.newBuilder().setName("date"))
-                            .addDimensions(Dimension.newBuilder().setName("source"))
+                            .addDimensions(Dimension.newBuilder().setName("sessionMedium"))
                             .addDimensions(Dimension.newBuilder().setName("eventName"))
 //                            .addMetrics(Metric.newBuilder().setName(MetricType.EventCount.getName()))
-                            .addMetrics(Metric.newBuilder().setName("purchaseRevenue"))
+                            .addMetrics(Metric.newBuilder().setName("eventCount"))
                             .addDateRanges(DateRange.newBuilder().setStartDate("2024-11-25").setEndDate("today"))
                             .build();
             // Make the request.
@@ -71,11 +72,17 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
                 String formattedDate = LocalDate.parse(rawDate, DateTimeFormatter.BASIC_ISO_DATE).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                 rowData.put("date", formattedDate);
 //                rowData.put("activeUsers", row.getMetricValues(0).getValue());
-                rowData.put("source", row.getDimensionValues(1).getValue());
+                rowData.put("sessionMedium", row.getDimensionValues(1).getValue());
                 rowData.put("event name", row.getDimensionValues(2).getValue());
 //                rowData.put("event count", row.getMetricValues(0).getValue());
                 rowData.put("purchase Revenue", row.getMetricValues(0).getValue());
-
+                Optional<Medium> checkMediumExist= mediumRepository.findByMediumName(row.getDimensionValues(1).getValue());
+                if(checkMediumExist.isEmpty()) {
+                    Medium medium= Medium.builder()
+                            .mediumName(row.getDimensionValues(1).getValue())
+                            .build();
+                    mediumRepository.save(medium);
+                }
                 result.add(rowData);
             }
             return result;
@@ -101,6 +108,7 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
                     RunReportRequest.newBuilder()
                             .setProperty("properties/" + propertyId)
                             .addDimensions(Dimension.newBuilder().setName(DimensionType.Date.getName()))
+                            .addDimensions(Dimension.newBuilder().setName(DimensionType.SessionMedium.getName()))
                             .addDimensions(Dimension.newBuilder().setName(reportRequest.getDimension()))
                             .addMetrics(Metric.newBuilder().setName(reportRequest.getMetric()))
                             .addDateRanges(DateRange.newBuilder().setStartDate(reportRequest.getStartDate()).setEndDate(reportRequest.getEndDate()))
@@ -121,18 +129,29 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
                 long randomSecond = ThreadLocalRandom.current().nextLong(minSecond, maxSecond);
                 LocalDateTime dateTime = LocalDateTime.ofEpochSecond(randomSecond, 0, java.time.ZoneOffset.UTC);
                 rowData.put(DimensionType.Date.getName(), formattedDate);
-                rowData.put(reportRequest.getDimension(), row.getDimensionValues(1).getValue());
+                rowData.put(reportRequest.getDimension(), row.getDimensionValues(2).getValue());
                 rowData.put(reportRequest.getMetric(), row.getMetricValues(0).getValue());
+
                 Event event= Event.builder()
                         .campaign(findCampaignExist)
-                        .eventName(row.getDimensionValues(1).getValue())
+                        .eventName(row.getDimensionValues(2).getValue())
                         .eventLabel(findDimensionExist.getDimensionKey())
                         .eventValue(row.getMetricValues(0).getValue())
                         .timestamp(dateTime)
                         .build();
 
+                Optional<Medium> checkMediumExist= mediumRepository.findByMediumName(row.getDimensionValues(1).getValue());
+                if(checkMediumExist.isPresent()) {
+                    event.setMedium(checkMediumExist.get());
+                }else{
+                    Medium medium= Medium.builder()
+                            .mediumName(row.getDimensionValues(1).getValue())
+                            .build();
+                    mediumRepository.save(medium);
+                    event.setMedium(medium);
+                }
                 event.setDeletedFlag(DeletedFlag.ACTIVE);
-                if(row.getDimensionValues(1).getValue().equals("purchase")){
+                if(row.getDimensionValues(2).getValue().equals("purchase")){
                     RunReportRequest requestPurchase =
                             RunReportRequest.newBuilder()
                                     .setProperty("properties/" + propertyId)
@@ -189,6 +208,16 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
         response.setTotalElements(events.getTotalElements());
         return response;
     }
+    @NotNull
+    private PageResponse<EventTableResponse> getEventTablePageResponse(Page<Event> events, List<EventTableResponse> data) {
+        PageResponse<EventTableResponse> response= new PageResponse<>();
+        response.setData(data);
+        response.setCurrentPage(events.getNumber());
+        response.setPageSize(events.getSize());
+        response.setTotalPages(events.getTotalPages());
+        response.setTotalElements(events.getTotalElements());
+        return response;
+    }
 
     @Override
     public Map<String, Object> getEventsByStartDateAndEndDate(String startDate,
@@ -218,16 +247,28 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
     }
 
     @Override
-    public List<?> getDataForChartWithDay(ListEventByDayRequest request) {
+    public PageResponse<EventTableResponse> getEventByMedium(String mediumName, int pageNum, int pageSize, String eventLabel, String startDate, String endDate) {
         try{
-            if(request.getType()!=null){
-                TimeType timeType= TimeType.findByName(request.getType().toLowerCase());
-
-            }
-            return List.of();
+            Pageable pageable= PageRequest.of(pageNum,pageSize);
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDate startDateRaw = LocalDate.parse(startDate, dateFormatter);
+            LocalDate endDateRaw = LocalDate.parse(endDate, dateFormatter);
+            LocalDateTime startDateNew= startDateRaw.atStartOfDay();
+            LocalDateTime endDateNew= endDateRaw.atTime(LocalTime.MAX);
+            Page<Event> getEvents= eventRepository.getEventsByMediumId(eventLabel,startDateNew,endDateNew,mediumName,pageable);
+            List<EventTableResponse> responses= getEvents.stream().collect(Collectors.groupingBy(
+                    Event::getEventName,
+                            Collectors.summingLong(event-> Long.parseLong(event.getEventValue()))
+                    ))
+                    .entrySet()
+                    .stream()
+                    .map(entry-> new EventTableResponse(entry.getKey(), entry.getValue()))
+                    .toList();
+            return getEventTablePageResponse(getEvents,responses);
         }catch (Exception e){
             throw new ApiException(ErrorCode.INTERNAL_SERVER_ERROR.getStatusCode().value(), e.getMessage());
         }
     }
+
 
 }

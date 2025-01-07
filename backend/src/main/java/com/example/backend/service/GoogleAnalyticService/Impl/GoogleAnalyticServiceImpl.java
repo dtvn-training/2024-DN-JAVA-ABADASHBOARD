@@ -287,6 +287,7 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
                     // Make the request.
                     RunReportResponse responsePurchase = analyticsData.runReport(requestPurchase);
                     List<Row> rowsPurchase = responsePurchase.getRowsList();
+                    List<PurchaseRevenue> purchaseRevenues= new ArrayList<>();
                     for(Row rowPurchase: rowsPurchase) {
                         double amount = Double.parseDouble(rowPurchase.getMetricValues(0).getValue());
                         PurchaseRevenue purchaseRevenue= PurchaseRevenue.builder()
@@ -294,8 +295,9 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
                                 .amount(BigDecimal.valueOf(amount))
                                 .source(rowPurchase.getDimensionValues(1).getValue())
                                 .build();
-                        event.getPurchaseRevenues().add(purchaseRevenue);
+                        purchaseRevenues.add(purchaseRevenue);
                     }
+                    event.setPurchaseRevenues(purchaseRevenues);
                 }
                 events.add(event);
             }

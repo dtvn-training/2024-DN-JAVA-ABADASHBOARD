@@ -23,11 +23,15 @@ public class EventReaderCustom implements ItemReader<List<Event>> {
     private final EventRepository eventRepository;
     private boolean readAlready = false;
 
-    @NotNull
     @Override
     public List<Event> read() throws Exception, UnexpectedInputException, ParseException, NonTransientResourceException {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime start = now.minusDays(3);
-        return eventRepository.getALlEventsByTimestampBetween(start, now);
+        if(!readAlready) {
+            readAlready = true;
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime start = now.minusDays(3);
+            return eventRepository.getALlEventsByTimestampBetween(start, now);
+        }else{
+            return null;
+        }
     }
 }

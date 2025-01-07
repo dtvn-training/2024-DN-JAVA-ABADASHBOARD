@@ -96,6 +96,15 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 """)
     List<EventChartResponse> getEventsForChart(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
+    @Query("select e from Event e " +
+            "where e.eventLabel=:eventLabel " +
+            "and e.timestamp between :startDate and :endDate " +
+            "and e.medium.mediumName=:mediumName")
+    Page<Event> getEventsByMediumId(@Param("eventLabel") String eventLabel,
+                                  @Param("startDate") LocalDateTime startDate,
+                                  @Param("endDate") LocalDateTime endDate,
+                                  @Param("mediumName") String mediumName,
+                                  Pageable pageable);
     @Query("select e from Event e where e.timestamp between :startDate and :endDate ")
     List<Event> getALlEventsByTimestampBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 }

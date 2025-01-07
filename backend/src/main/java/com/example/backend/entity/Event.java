@@ -49,4 +49,8 @@ public class Event extends AbstractDefault {
 
     @OneToMany(mappedBy = "event")
     private List<PurchaseRevenue> purchaseRevenues;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "medium_id", referencedColumnName = "medium_id")
+    Medium medium;
 }

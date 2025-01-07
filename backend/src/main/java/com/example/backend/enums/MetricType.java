@@ -11,6 +11,10 @@ public enum MetricType {
     ItemsViewed("itemsViewed"),
     ScreenPageViews("screenPageViews"),
     Sessions("sessions"),
+    EcommercePurchases("ecommercePurchases"),
+    AddToCarts("addToCarts"),
+    ItemRevenue("itemRevenue"),
+    GrossPurchaseRevenue("grossPurchaseRevenue"),
     PurchaseRevenue("purchaseRevenue"),;
 
     MetricType(String name){

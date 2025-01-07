@@ -243,8 +243,8 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
             if(!findDimensionExist.getMetricMasters().contains(findMetricExist)) {
                 throw new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(), "Metric is not valid");
             }
-            LocalDateTime startDate= LocalDateTime.now();
-            LocalDateTime endDate= startDate.minusDays(3);
+            LocalDateTime endDate= LocalDateTime.now();
+            LocalDateTime startDate= endDate.minusDays(3);
             String startDateNew= startDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             String endDateNew= endDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             RunReportRequest request =

@@ -3,7 +3,7 @@ package com.example.backend.controller;
 import com.example.backend.dto.response.ApiResponse;
 import com.example.backend.dto.response.PageResponse;
 import com.example.backend.dto.response.TriggerTemplateResponse;
-import com.example.backend.service.GoogleTagManagerService.TriggerTemplateService;
+import com.example.backend.service.TriggerTemplateService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;

@@ -1,4 +1,4 @@
-package com.example.backend.service.GoogleAnalyticService.Impl;
+package com.example.backend.service.Impl;
 
 import com.example.backend.dto.EventDto;
 import com.example.backend.dto.request.ReportRequest;
@@ -12,7 +12,7 @@ import com.example.backend.enums.MetricType;
 import com.example.backend.exception.ApiException;
 import com.example.backend.mapper.EventMapper;
 import com.example.backend.repository.*;
-import com.example.backend.service.GoogleAnalyticService.GoogleAnalyticService;
+import com.example.backend.service.GoogleAnalyticService;
 import com.google.analytics.data.v1beta.*;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
@@ -21,8 +21,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -220,11 +218,14 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
     }
 
     @Override
-    public Map<String, Object> getEventsByStartDateAndEndDate(String startDate,
-                                                                 String endDate,
-                                                                 String eventLabel,
-                                                                 int pageNum,
-                                                                 int pageSize) {
+    public Map<String, Object> getEventsByFilter(String startDate,
+                                                 String endDate,
+                                                 String eventLabel,
+                                                 int pageNum,
+                                                 int pageSize,
+                                                 String mediumName,
+                                                 String campaignName
+                                                 ) {
         try{
             Pageable pageable= PageRequest.of(pageNum,pageSize);
             DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -233,9 +234,9 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
             LocalDateTime startDateNew= startDateRaw.atStartOfDay();
             LocalDateTime endDateNew= endDateRaw.atTime(LocalTime.MAX);
             PagedResourcesAssembler<EventTableResponse> pagedResourcesAssembler= new PagedResourcesAssembler<>(null,null);
-            Page<EventTableResponse> eventsTableResponse= eventRepository.findEventsByEventLabelAndTimestampBetween(eventLabel,startDateNew,endDateNew,pageable);
-            List<NumberOfEventResponse> numberOfEventResponses= eventRepository.numberOfEventsByEventLabel(startDateNew,endDateNew);
-            List<EventChartResponse> getEventChartResponse= eventRepository.getEventsForChart(startDateNew,endDateNew);
+            Page<EventTableResponse> eventsTableResponse= eventRepository.findEventsByEventLabelAndTimestampBetween(eventLabel,startDateNew,endDateNew,mediumName,campaignName,pageable);
+            List<NumberOfEventResponse> numberOfEventResponses= eventRepository.numberOfEventsByEventLabel(startDateNew,endDateNew,mediumName,campaignName);
+            List<EventChartResponse> getEventChartResponse= eventRepository.getEventsForChart(startDateNew,endDateNew,mediumName,campaignName);
             Map<String, Object> response= new HashMap<>();
             response.put("eventTable", pagedResourcesAssembler.toModel(eventsTableResponse));
             response.put("numberOfEvent",numberOfEventResponses);

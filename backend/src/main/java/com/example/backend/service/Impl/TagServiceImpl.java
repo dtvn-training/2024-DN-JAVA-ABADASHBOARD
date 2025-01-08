@@ -1,4 +1,4 @@
-package com.example.backend.service.GoogleTagManagerService.Impl;
+package com.example.backend.service.Impl;
 
 import com.example.backend.dto.ParameterDto;
 import com.example.backend.dto.request.*;
@@ -12,7 +12,7 @@ import com.example.backend.enums.TagStatus;
 import com.example.backend.exception.ApiException;
 import com.example.backend.mapper.TagMapper;
 import com.example.backend.repository.*;
-import com.example.backend.service.GoogleTagManagerService.TagService;
+import com.example.backend.service.TagService;
 import com.google.api.services.tagmanager.TagManager;
 import com.google.api.services.tagmanager.model.ListTagsResponse;
 import com.google.api.services.tagmanager.model.Parameter;

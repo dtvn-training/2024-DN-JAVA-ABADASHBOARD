@@ -29,11 +29,15 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "from Event e " +
             "where e.timestamp between :startDate and :endDate " +
             "and e.eventLabel=:eventLabel " +
+            "and e.campaign.campaignName like concat('%', :campaignName, '%') " +
+            "and e.medium.mediumName like concat('%', :mediumName, '%') " +
             "group by e.eventName")
     Page<EventTableResponse> findEventsByEventLabelAndTimestampBetween(
             @Param("eventLabel") String eventLabel,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate,
+            @Param("mediumName") String mediumName,
+            @Param("campaignName") String campaignName,
             Pageable pageable);
 
     @Query("""
@@ -47,6 +51,8 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             sum(cast(e.eventValue as Long)))
             FROM Event e
             WHERE e.timestamp between :startDate and :endDate
+            and e.medium.mediumName like concat('%', :mediumName, '%')
+            and e.campaign.campaignName like concat('%', :campaignName, '%')
             group by e.eventLabel,
             case
                 when e.eventLabel ='eventName' and e.eventName='purchase' then 'purchase'
@@ -55,7 +61,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
                 else 'unknown'
             end
 """)
-    List<NumberOfEventResponse> numberOfEventsByEventLabel(LocalDateTime startDate,LocalDateTime endDate);
+    List<NumberOfEventResponse> numberOfEventsByEventLabel(LocalDateTime startDate,LocalDateTime endDate, String mediumName, String campaignName);
 
     @Query("""
         SELECT
@@ -77,6 +83,8 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             e.eventName IN ('purchase', 'form_start') OR
             e.eventLabel = 'city'
             )
+          and e.medium.mediumName like concat('%', :mediumName, '%')
+          and e.campaign.campaignName like concat('%', :campaignName, '%')
         GROUP BY
             date_trunc('day',e.timestamp),
             CASE
@@ -94,7 +102,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
                 ELSE 'other'
                 END
 """)
-    List<EventChartResponse> getEventsForChart(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+    List<EventChartResponse> getEventsForChart(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate, @Param("mediumName") String mediumName, @Param("campaignName") String campaignName);
 
     @Query("select e from Event e " +
             "where e.eventLabel=:eventLabel " +

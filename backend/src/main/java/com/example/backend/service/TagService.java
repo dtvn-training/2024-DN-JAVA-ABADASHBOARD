@@ -1,6 +1,5 @@
-package com.example.backend.service.GoogleTagManagerService;
+package com.example.backend.service;
 
-import com.example.backend.dto.TagDto;
 import com.example.backend.dto.request.CreateTagRequest;
 import com.example.backend.dto.request.CreateTriggerRequest;
 import com.example.backend.dto.request.ListTagRequestGTM;

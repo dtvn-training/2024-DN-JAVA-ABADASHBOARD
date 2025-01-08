@@ -1,8 +1,8 @@
-package com.example.backend.service.GoogleTagManagerService.Impl;
+package com.example.backend.service.Impl;
 
 import com.example.backend.enums.ErrorCode;
 import com.example.backend.exception.ApiException;
-import com.example.backend.service.GoogleTagManagerService.LoadConfig;
+import com.example.backend.service.LoadConfig;
 import com.google.api.services.tagmanager.TagManager;
 import com.google.api.services.tagmanager.model.Container;
 import com.google.api.services.tagmanager.model.Workspace;

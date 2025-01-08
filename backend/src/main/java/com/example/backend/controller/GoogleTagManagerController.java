@@ -7,7 +7,7 @@ import com.example.backend.dto.response.PageResponse;
 import com.example.backend.dto.response.TagResponse;
 import com.example.backend.enums.ErrorCode;
 import com.example.backend.exception.ApiException;
-import com.example.backend.service.GoogleTagManagerService.TagService;
+import com.example.backend.service.TagService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

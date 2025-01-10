@@ -1,5 +1,6 @@
 package com.example.backend.service.Impl;
 
+import com.example.backend.constant.AppConstant;
 import com.example.backend.dto.EventDto;
 import com.example.backend.dto.request.ReportRequest;
 import com.example.backend.dto.response.EventChartResponse;
@@ -35,162 +36,16 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
-    private final BetaAnalyticsDataClient analyticsData;
-    @Value("${google-analytic.properties_id}")
-    private String propertyId;
-    private final DimensionMasterRepository dimensionMasterRepository;
-    private final MetricMasterRepository metricMasterRepository;
-    private final CampaignRepository campaignRepository;
     private final EventRepository eventRepository;
     private final EventMapper eventMapper;
-    private final PurchaseRevenueRepository purchaseRevenueRepository;
-    private final MediumRepository mediumRepository;
 
-    @Override
-    public List<Map<String, String>> reportResponse() {
-        try{
-            RunReportRequest request =
-                    RunReportRequest.newBuilder()
-                            .setProperty("properties/" + propertyId)
-//                            .addDimensions(Dimension.newBuilder().setName(DimensionType.City.getName()))
-                            .addDimensions(Dimension.newBuilder().setName("date"))
-                            .addDimensions(Dimension.newBuilder().setName("sessionMedium"))
-                            .addDimensions(Dimension.newBuilder().setName("eventName"))
-//                            .addMetrics(Metric.newBuilder().setName(MetricType.EventCount.getName()))
-                            .addMetrics(Metric.newBuilder().setName("eventCount"))
-                            .addDateRanges(DateRange.newBuilder().setStartDate("2024-11-25").setEndDate("today"))
-                            .build();
-            // Make the request.
-            RunReportResponse response = analyticsData.runReport(request);
-
-            List<Map<String, String>> result = new ArrayList<>();
-            for (Row row : response.getRowsList()) {
-                Map<String, String> rowData = new HashMap<>();
-                String rawDate = row.getDimensionValues(0).getValue(); // Giá trị thô "date"
-                String formattedDate = LocalDate.parse(rawDate, DateTimeFormatter.BASIC_ISO_DATE).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                rowData.put("date", formattedDate);
-//                rowData.put("activeUsers", row.getMetricValues(0).getValue());
-                rowData.put("sessionMedium", row.getDimensionValues(1).getValue());
-                rowData.put("event name", row.getDimensionValues(2).getValue());
-//                rowData.put("event count", row.getMetricValues(0).getValue());
-                rowData.put("purchase Revenue", row.getMetricValues(0).getValue());
-                Optional<Medium> checkMediumExist= mediumRepository.findByMediumName(row.getDimensionValues(1).getValue());
-                if(checkMediumExist.isEmpty()) {
-                    Medium medium= Medium.builder()
-                            .mediumName(row.getDimensionValues(1).getValue())
-                            .build();
-                    mediumRepository.save(medium);
-                }
-                result.add(rowData);
-            }
-            return result;
-        }catch (Exception e){
-            throw new ApiException(ErrorCode.BAD_REQUEST.getCode(), e.getMessage());
-        }
-    }
-
-    @Override
-    public List<Map<String, String>> saveEventIntoDatabase(ReportRequest reportRequest) {
-        try{
-            Campaign findCampaignExist= campaignRepository.findByCampaignId(reportRequest.getCampaignId())
-                    .orElseThrow(()-> new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(),"Campaign is not found"));
-            DimensionMaster findDimensionExist= dimensionMasterRepository.findByDimensionKey(reportRequest.getDimension())
-                    .orElseThrow(()-> new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(),"Dimension is not found"));
-            MetricMaster findMetricExist= metricMasterRepository.findByMetricKey(reportRequest.getMetric())
-                    .orElseThrow(()-> new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(),"Metric is not found"));
-
-            if(!findDimensionExist.getMetricMasters().contains(findMetricExist)) {
-                throw new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(), "Metric is not valid");
-            }
-            RunReportRequest request =
-                    RunReportRequest.newBuilder()
-                            .setProperty("properties/" + propertyId)
-                            .addDimensions(Dimension.newBuilder().setName(DimensionType.Date.getName()))
-                            .addDimensions(Dimension.newBuilder().setName(DimensionType.SessionMedium.getName()))
-                            .addDimensions(Dimension.newBuilder().setName(reportRequest.getDimension()))
-                            .addMetrics(Metric.newBuilder().setName(reportRequest.getMetric()))
-                            .addDateRanges(DateRange.newBuilder().setStartDate(reportRequest.getStartDate()).setEndDate(reportRequest.getEndDate()))
-                            .build();
-            // Make the request.
-            RunReportResponse response = analyticsData.runReport(request);
-            List<Row> rows = response.getRowsList();
-            List<Map<String, String>> result = new ArrayList<>();
-            List<Event> saveEvent= new ArrayList<>();
-            List<PurchaseRevenue> savePurchaseRevenue= new ArrayList<>();
-            for (Row row : rows) {
-                Map<String, String> rowData = new HashMap<>();
-                String rawDate = row.getDimensionValues(0).getValue(); // Giá trị thô "date"
-                LocalDate date= LocalDate.parse(rawDate, DateTimeFormatter.BASIC_ISO_DATE);
-                String formattedDate = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                long minSecond = date.atStartOfDay().toEpochSecond(java.time.ZoneOffset.UTC);
-                long maxSecond = date.plusDays(1).atStartOfDay().toEpochSecond(java.time.ZoneOffset.UTC);
-                long randomSecond = ThreadLocalRandom.current().nextLong(minSecond, maxSecond);
-                LocalDateTime dateTime = LocalDateTime.ofEpochSecond(randomSecond, 0, java.time.ZoneOffset.UTC);
-                rowData.put(DimensionType.Date.getName(), formattedDate);
-                rowData.put(reportRequest.getDimension(), row.getDimensionValues(2).getValue());
-                rowData.put(reportRequest.getMetric(), row.getMetricValues(0).getValue());
-
-                Event event= Event.builder()
-                        .campaign(findCampaignExist)
-                        .eventName(row.getDimensionValues(2).getValue())
-                        .eventLabel(findDimensionExist.getDimensionKey())
-                        .eventValue(row.getMetricValues(0).getValue())
-                        .timestamp(dateTime)
-                        .build();
-
-                Optional<Medium> checkMediumExist= mediumRepository.findByMediumName(row.getDimensionValues(1).getValue());
-                if(checkMediumExist.isPresent()) {
-                    event.setMedium(checkMediumExist.get());
-                }else{
-                    Medium medium= Medium.builder()
-                            .mediumName(row.getDimensionValues(1).getValue())
-                            .build();
-                    mediumRepository.save(medium);
-                    event.setMedium(medium);
-                }
-                event.setDeletedFlag(DeletedFlag.ACTIVE);
-                if(row.getDimensionValues(2).getValue().equals("purchase")){
-                    RunReportRequest requestPurchase =
-                            RunReportRequest.newBuilder()
-                                    .setProperty("properties/" + propertyId)
-                                    .addDimensions(Dimension.newBuilder().setName(DimensionType.Date.getName()))
-                                    .addDimensions(Dimension.newBuilder().setName(DimensionType.Source.getName()))
-                                    .addDimensions(Dimension.newBuilder().setName(DimensionType.EventName.getName()))
-                                    .addMetrics(Metric.newBuilder().setName(MetricType.PurchaseRevenue.getName()))
-                                    .addDateRanges(DateRange.newBuilder().setStartDate(formattedDate).setEndDate(formattedDate))
-                                    .build();
-                    // Make the request.
-                    RunReportResponse responsePurchase = analyticsData.runReport(requestPurchase);
-                    List<Row> rowsPurchase = responsePurchase.getRowsList();
-                    for(Row rowPurchase: rowsPurchase) {
-                        double amount = Double.parseDouble(rowPurchase.getMetricValues(0).getValue());
-                        PurchaseRevenue purchaseRevenue= PurchaseRevenue.builder()
-                                .event(event)
-                                .amount(BigDecimal.valueOf(amount))
-                                .source(rowPurchase.getDimensionValues(1).getValue())
-                                .build();
-                        savePurchaseRevenue.add(purchaseRevenue);
-                    }
-
-                }
-
-                saveEvent.add(event);
-                result.add(rowData);
-            }
-            eventRepository.saveAll(saveEvent);
-            purchaseRevenueRepository.saveAll(savePurchaseRevenue);
-            return result;
-        }catch (Exception e){
-            throw new ApiException(ErrorCode.BAD_REQUEST.getCode(), e.getMessage());
-        }
-    }
     @Override
     public PageResponse<EventDto> getEvents(int pageNum, int pageSize, String eventLabel) {
-        try{
-            Pageable pageable= PageRequest.of(pageNum,pageSize);
-            Page<Event> events= eventRepository.findDistinctEventsByEventLabel(eventLabel,pageable);
+        try {
+            Pageable pageable = PageRequest.of(pageNum, pageSize);
+            Page<Event> events = eventRepository.findDistinctEventsByEventLabel(eventLabel, pageable);
             return getEventDtoPageResponse(events);
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new ApiException(ErrorCode.INTERNAL_SERVER_ERROR.getStatusCode().value(), e.getMessage());
         }
     }
@@ -198,7 +53,7 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
     @NotNull
     private PageResponse<EventDto> getEventDtoPageResponse(Page<Event> events) {
         List<EventDto> data = events.stream().map(eventMapper::mapToDto).toList();
-        PageResponse<EventDto> response= new PageResponse<>();
+        PageResponse<EventDto> response = new PageResponse<>();
         response.setData(data);
         response.setCurrentPage(events.getNumber());
         response.setPageSize(events.getSize());
@@ -206,9 +61,10 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
         response.setTotalElements(events.getTotalElements());
         return response;
     }
+
     @NotNull
     private PageResponse<EventTableResponse> getEventTablePageResponse(Page<Event> events, List<EventTableResponse> data) {
-        PageResponse<EventTableResponse> response= new PageResponse<>();
+        PageResponse<EventTableResponse> response = new PageResponse<>();
         response.setData(data);
         response.setCurrentPage(events.getNumber());
         response.setPageSize(events.getSize());
@@ -224,49 +80,50 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
                                                  int pageNum,
                                                  int pageSize,
                                                  String mediumName,
-                                                 String campaignName
-                                                 ) {
-        try{
-            Pageable pageable= PageRequest.of(pageNum,pageSize);
-            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                                                 String campaignName) {
+        try {
+            Pageable pageable = PageRequest.of(pageNum, pageSize);
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(AppConstant.TIME_FORMAT);
             LocalDate startDateRaw = LocalDate.parse(startDate, dateFormatter);
             LocalDate endDateRaw = LocalDate.parse(endDate, dateFormatter);
-            LocalDateTime startDateNew= startDateRaw.atStartOfDay();
-            LocalDateTime endDateNew= endDateRaw.atTime(LocalTime.MAX);
-            PagedResourcesAssembler<EventTableResponse> pagedResourcesAssembler= new PagedResourcesAssembler<>(null,null);
-            Page<EventTableResponse> eventsTableResponse= eventRepository.findEventsByEventLabelAndTimestampBetween(eventLabel,startDateNew,endDateNew,mediumName,campaignName,pageable);
-            List<NumberOfEventResponse> numberOfEventResponses= eventRepository.numberOfEventsByEventLabel(startDateNew,endDateNew,mediumName,campaignName);
-            List<EventChartResponse> getEventChartResponse= eventRepository.getEventsForChart(startDateNew,endDateNew,mediumName,campaignName);
-            Map<String, Object> response= new HashMap<>();
+            LocalDateTime startDateNew = startDateRaw.atStartOfDay();
+            LocalDateTime endDateNew = endDateRaw.atTime(LocalTime.MAX);
+            // execute query get data for event table, number of event and event for chart.
+            PagedResourcesAssembler<EventTableResponse> pagedResourcesAssembler = new PagedResourcesAssembler<>(null, null);
+            Page<EventTableResponse> eventsTableResponse = eventRepository.findEventsByEventLabelAndTimestampBetween(eventLabel, startDateNew, endDateNew, mediumName, campaignName, pageable);
+            List<NumberOfEventResponse> numberOfEventResponses = eventRepository.numberOfEventsByEventLabel(startDateNew, endDateNew, mediumName, campaignName);
+            List<EventChartResponse> getEventChartResponse = eventRepository.getEventsForChart(startDateNew, endDateNew, mediumName, campaignName);
+            Map<String, Object> response = new HashMap<>();
             response.put("eventTable", pagedResourcesAssembler.toModel(eventsTableResponse));
-            response.put("numberOfEvent",numberOfEventResponses);
+            response.put("numberOfEvent", numberOfEventResponses);
             response.put("chartEvent", getEventChartResponse);
             return response;
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new ApiException(ErrorCode.INTERNAL_SERVER_ERROR.getStatusCode().value(), e.getMessage());
         }
     }
 
     @Override
     public PageResponse<EventTableResponse> getEventByMedium(String mediumName, int pageNum, int pageSize, String eventLabel, String startDate, String endDate) {
-        try{
-            Pageable pageable= PageRequest.of(pageNum,pageSize);
-            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        try {
+            Pageable pageable = PageRequest.of(pageNum, pageSize);
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(AppConstant.TIME_FORMAT);
             LocalDate startDateRaw = LocalDate.parse(startDate, dateFormatter);
             LocalDate endDateRaw = LocalDate.parse(endDate, dateFormatter);
-            LocalDateTime startDateNew= startDateRaw.atStartOfDay();
-            LocalDateTime endDateNew= endDateRaw.atTime(LocalTime.MAX);
-            Page<Event> getEvents= eventRepository.getEventsByMediumId(eventLabel,startDateNew,endDateNew,mediumName,pageable);
-            List<EventTableResponse> responses= getEvents.stream().collect(Collectors.groupingBy(
-                    Event::getEventName,
-                            Collectors.summingLong(event-> Long.parseLong(event.getEventValue()))
+            LocalDateTime startDateNew = startDateRaw.atStartOfDay();
+            LocalDateTime endDateNew = endDateRaw.atTime(LocalTime.MAX);
+            // get all event with medium id
+            Page<Event> getEvents = eventRepository.getEventsByMediumId(eventLabel, startDateNew, endDateNew, mediumName, pageable);
+            List<EventTableResponse> responses = getEvents.stream().collect(Collectors.groupingBy(
+                            Event::getEventName,
+                            Collectors.summingLong(event -> Long.parseLong(event.getEventValue()))
                     ))
                     .entrySet()
                     .stream()
-                    .map(entry-> new EventTableResponse(entry.getKey(), entry.getValue()))
+                    .map(entry -> new EventTableResponse(entry.getKey(), entry.getValue()))
                     .toList();
-            return getEventTablePageResponse(getEvents,responses);
-        }catch (Exception e){
+            return getEventTablePageResponse(getEvents, responses);
+        } catch (Exception e) {
             throw new ApiException(ErrorCode.INTERNAL_SERVER_ERROR.getStatusCode().value(), e.getMessage());
         }
     }

@@ -11,8 +11,6 @@ import java.util.Map;
 
 @Service
 public interface GoogleAnalyticService {
-    List<Map<String, String>> reportResponse();
-    List<Map<String, String>> saveEventIntoDatabase(ReportRequest request);
     PageResponse<EventDto> getEvents(int pageNum, int pageSize, String eventLabel);
     Map<String, Object> getEventsByFilter(String startDate, String endDate,
                                                        String eventLabel,

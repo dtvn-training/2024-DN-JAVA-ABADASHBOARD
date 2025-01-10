@@ -22,70 +22,46 @@ import java.util.Map;
 public class GoogleAnalyticController {
     private final GoogleAnalyticService googleAnalyticService;
 
-
-    @GetMapping("/run-report")
-    public ApiResponse<List<Map<String, String>>> getReportOfGoogleAnalytic() {
-        try{
-            List<Map<String, String>> response= googleAnalyticService.reportResponse();
-            return CreateApiResponse.createResponse(response);
-        }catch (Exception e){
-            throw new ApiException(ErrorCode.BAD_REQUEST.getCode(),e.getMessage());
-        }
-    }
-
-    @PostMapping("/save-report")
-    public ApiResponse<List<Map<String, String>>> saveReportOfGoogleAnalyticIntoDb(@Valid @RequestBody ReportRequest request) {
-        try{
-            List<Map<String, String>> response= googleAnalyticService.saveEventIntoDatabase(request);
-            return CreateApiResponse.createResponse(response);
-        }catch (Exception e){
-            throw new ApiException(ErrorCode.BAD_REQUEST.getCode(),e.getMessage());
-        }
-    }
-
     @GetMapping("/get-all-events")
     public ApiResponse<PageResponse<EventDto>> getEventsOfGoogleAnalytic(@RequestParam(value = "pageNum", defaultValue = "0") int pageNum,
-                                                                 @RequestParam(value = "pageSize", defaultValue = "6") int pageSize,
-                                                                 @RequestParam("eventLabel") String eventLabel) {
-        try{
-            PageResponse<EventDto> response= googleAnalyticService.getEvents(pageNum, pageSize, eventLabel);
+                                                                         @RequestParam(value = "pageSize", defaultValue = "6") int pageSize,
+                                                                         @RequestParam("eventLabel") String eventLabel) {
+        try {
+            PageResponse<EventDto> response = googleAnalyticService.getEvents(pageNum, pageSize, eventLabel);
             return CreateApiResponse.createResponse(response);
-        }catch (Exception e){
-            throw new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(),e.getMessage());
+        } catch (Exception e) {
+            throw new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(), e.getMessage());
         }
     }
 
     @GetMapping("/get-all-events-by-filter")
     public ApiResponse<Map<String, Object>> getEventsOfGoogleAnalyticByFilter(@RequestParam(value = "pageNum", defaultValue = "0") int pageNum,
-                                                                         @RequestParam(value = "pageSize", defaultValue = "6") int pageSize,
-                                                                         @RequestParam(value = "eventLabel", defaultValue = "eventName") String eventLabel,
-                                                                         @RequestParam(value = "startDate", defaultValue = "2024-12-01") String startDate,
-                                                                         @RequestParam(value = "endDate", defaultValue = "2024-12-31") String endDate,
-                                                                         @RequestParam(value = "mediumName", defaultValue = "") String mediumName,
-                                                                         @RequestParam(value = "campaignName", defaultValue = "") String campaignName
-
-    ) {
-        try{
-            Map<String, Object> response= googleAnalyticService.getEventsByFilter(startDate,endDate,eventLabel,pageNum,pageSize, mediumName, campaignName);
+                                                                              @RequestParam(value = "pageSize", defaultValue = "6") int pageSize,
+                                                                              @RequestParam(value = "eventLabel", defaultValue = "eventName") String eventLabel,
+                                                                              @RequestParam(value = "startDate", defaultValue = "2024-12-01") String startDate,
+                                                                              @RequestParam(value = "endDate", defaultValue = "2024-12-31") String endDate,
+                                                                              @RequestParam(value = "mediumName", defaultValue = "") String mediumName,
+                                                                              @RequestParam(value = "campaignName", defaultValue = "") String campaignName) {
+        try {
+            Map<String, Object> response = googleAnalyticService.getEventsByFilter(startDate, endDate, eventLabel, pageNum, pageSize, mediumName, campaignName);
             return CreateApiResponse.createResponse(response);
-        }catch (Exception e){
-            throw new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(),e.getMessage());
+        } catch (Exception e) {
+            throw new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(), e.getMessage());
         }
     }
 
     @GetMapping("/get-events-by-medium")
     public ApiResponse<PageResponse<EventTableResponse>> getEventsOfGoogleAnalyticByMedium(@RequestParam(value = "pageNum", defaultValue = "0") int pageNum,
-                                                                                       @RequestParam(value = "pageSize", defaultValue = "6") int pageSize,
-                                                                                       @RequestParam(value = "eventLabel", defaultValue = "eventName") String eventLabel,
-                                                                                       @RequestParam(value = "startDate", defaultValue = "2024-12-01") String startDate,
-                                                                                       @RequestParam(value = "endDate", defaultValue = "2024-12-31") String endDate,
-                                                                                        @RequestParam(value = "mediumName", defaultValue = "organic") String mediumName
-    ) {
-        try{
-            PageResponse<EventTableResponse> response= googleAnalyticService.getEventByMedium(mediumName,pageNum,pageSize, eventLabel,startDate,endDate);
+                                                                                           @RequestParam(value = "pageSize", defaultValue = "6") int pageSize,
+                                                                                           @RequestParam(value = "eventLabel", defaultValue = "eventName") String eventLabel,
+                                                                                           @RequestParam(value = "startDate", defaultValue = "2024-12-01") String startDate,
+                                                                                           @RequestParam(value = "endDate", defaultValue = "2024-12-31") String endDate,
+                                                                                           @RequestParam(value = "mediumName", defaultValue = "organic") String mediumName) {
+        try {
+            PageResponse<EventTableResponse> response = googleAnalyticService.getEventByMedium(mediumName, pageNum, pageSize, eventLabel, startDate, endDate);
             return CreateApiResponse.createResponse(response);
-        }catch (Exception e){
-            throw new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(),e.getMessage());
+        } catch (Exception e) {
+            throw new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(), e.getMessage());
         }
     }
 }

@@ -21,33 +21,32 @@ public class CampaignController {
 
     @GetMapping("/get-all-campaign")
     public ApiResponse<PageResponse<CampaignDto>> getCampaigns(@RequestParam(value = "pageNum", defaultValue = "0") int pageNum,
-                                                                            @RequestParam(value = "pageSize", defaultValue = "6") int pageSize
-                                                                            ) {
-        try{
-            PageResponse<CampaignDto> response= campaignService.getAllCampaigns(pageNum, pageSize);
+                                                               @RequestParam(value = "pageSize", defaultValue = "6") int pageSize) {
+        try {
+            PageResponse<CampaignDto> response = campaignService.getAllCampaigns(pageNum, pageSize);
             return CreateApiResponse.createResponse(response);
-        }catch (Exception e){
-            throw new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(),e.getMessage());
+        } catch (Exception e) {
+            throw new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(), e.getMessage());
         }
     }
 
     @GetMapping("/get-campaign-by-id/{campaignId}")
     public ApiResponse<CampaignDto> getCampaignById(@PathVariable Long campaignId) {
-        try{
-            CampaignDto response= campaignService.getCampaignById(campaignId);
+        try {
+            CampaignDto response = campaignService.getCampaignById(campaignId);
             return CreateApiResponse.createResponse(response);
-        }catch (Exception e){
-            throw new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(),e.getMessage());
+        } catch (Exception e) {
+            throw new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(), e.getMessage());
         }
     }
 
     @GetMapping("/get-dropdown-campaign")
     public ApiResponse<List<DropDownCampaignResponse>> getDropdownCampaign() {
-        try{
-            List<DropDownCampaignResponse> response= campaignService.getAllDropDownCampaigns();
+        try {
+            List<DropDownCampaignResponse> response = campaignService.getAllDropDownCampaigns();
             return CreateApiResponse.createResponse(response);
-        }catch (Exception e){
-            throw new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(),e.getMessage());
+        } catch (Exception e) {
+            throw new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(), e.getMessage());
         }
     }
 
@@ -58,13 +57,12 @@ public class CampaignController {
                                                                         @RequestParam(value = "minBudget", defaultValue = "0") double minBudget,
                                                                         @RequestParam(value = "maxBudget", defaultValue = "100") double maxBudget,
                                                                         @RequestParam(value = "startDate", defaultValue = "2024-12-30") String startDate,
-                                                                        @RequestParam(value = "endDate", defaultValue = "2025-03-01") String endDate
-                                                                        ) {
-        try{
-            PageResponse<CampaignDto> response= campaignService.getAllCampaignsByFilter(pageNum,pageSize,status,minBudget,maxBudget,startDate,endDate);
+                                                                        @RequestParam(value = "endDate", defaultValue = "2025-03-01") String endDate) {
+        try {
+            PageResponse<CampaignDto> response = campaignService.getAllCampaignsByFilter(pageNum, pageSize, status, minBudget, maxBudget, startDate, endDate);
             return CreateApiResponse.createResponse(response);
-        }catch (Exception e){
-            throw new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(),e.getMessage());
+        } catch (Exception e) {
+            throw new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(), e.getMessage());
         }
     }
 }

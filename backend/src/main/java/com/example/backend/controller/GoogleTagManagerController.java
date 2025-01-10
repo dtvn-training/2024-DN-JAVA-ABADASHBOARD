@@ -25,28 +25,28 @@ public class GoogleTagManagerController {
 
     @PostMapping("/create-tag")
     public ApiResponse<TagResponse> createTag(@Valid @RequestBody CreateTagRequest request) {
-        try{
+        try {
             return tagService.CreateTag(request);
-        }catch(Exception e){
+        } catch (Exception e) {
             throw new ApiException(ErrorCode.BAD_REQUEST.getCode(), e.getMessage());
         }
     }
 
     @PostMapping("/create-trigger")
     public ResponseEntity<?> createTrigger(@RequestBody CreateTriggerRequest request) {
-        try{
+        try {
             return tagService.createTrigger(request);
-        }catch(Exception e){
+        } catch (Exception e) {
             throw new ApiException(ErrorCode.BAD_REQUEST.getCode(), e.getMessage());
         }
     }
-        @GetMapping("/list-tag")
+
+    @GetMapping("/list-tag")
     public ApiResponse<PageResponse<TagResponse>> getListTag(
-            @RequestParam(value = "page" , required = false , defaultValue = "1") int page,
-            @RequestParam (value = "size" , required = false , defaultValue = "6") int size
-    ) {
+            @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+            @RequestParam(value = "size", required = false, defaultValue = "6") int size) {
         try {
-            PageResponse<TagResponse> tagResponses = tagService.listTags(page,size);
+            PageResponse<TagResponse> tagResponses = tagService.listTags(page, size);
             return ApiResponse.<PageResponse<TagResponse>>builder()
                     .message("success")
                     .data(tagResponses)

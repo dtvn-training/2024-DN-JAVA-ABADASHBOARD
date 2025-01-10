@@ -1,5 +1,6 @@
 package com.example.backend.controller;
 
+import com.example.backend.comon.CreateApiResponse;
 import com.example.backend.dto.response.ApiResponse;
 import com.example.backend.dto.response.PageResponse;
 import com.example.backend.dto.response.TriggerTemplateResponse;
@@ -25,11 +26,8 @@ public class TriggerTemplateController {
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "10") int size) {
         try {
-            PageResponse<TriggerTemplateResponse> triggerTemplateResponse = triggerTemplateService.listTriggerTemplates(page,size);
-            return ApiResponse.<PageResponse<TriggerTemplateResponse>>builder()
-                    .message("success")
-                    .data(triggerTemplateResponse)
-                    .build();
+            PageResponse<TriggerTemplateResponse> triggerTemplateResponse = triggerTemplateService.listTriggerTemplates(page, size);
+            return CreateApiResponse.createResponse(triggerTemplateResponse);
         } catch (Exception e) {
             return ApiResponse.<PageResponse<TriggerTemplateResponse>>builder()
                     .code(HttpStatus.INTERNAL_SERVER_ERROR.value())

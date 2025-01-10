@@ -9,7 +9,6 @@ import org.springframework.data.web.config.EnableSpringDataWebSupport;
 @EnableSpringDataWebSupport
 public class BackendApplication {
 
-
 	public static void main(String[] args) throws Exception {
 		Dotenv dotenv = Dotenv.configure().load();
 		dotenv.entries().forEach(entry -> System.setProperty(entry.getKey(), entry.getValue()));

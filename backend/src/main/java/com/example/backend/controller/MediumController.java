@@ -23,11 +23,11 @@ public class MediumController {
 
     @GetMapping("/get-dropdown-medium")
     public ApiResponse<List<MediumDto>> getMediums() {
-        try{
-            List<MediumDto> response= mediumService.getMediums();
+        try {
+            List<MediumDto> response = mediumService.getMediums();
             return CreateApiResponse.createResponse(response);
-        }catch (Exception e){
-            throw new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(),e.getMessage());
+        } catch (Exception e) {
+            throw new ApiException(ErrorCode.BAD_REQUEST.getStatusCode().value(), e.getMessage());
         }
     }
 }

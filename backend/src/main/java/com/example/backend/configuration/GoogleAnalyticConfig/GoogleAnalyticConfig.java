@@ -15,10 +15,12 @@ import java.io.IOException;
 public class GoogleAnalyticConfig {
     @Value("${google-analytic.services_account}")
     private String serviceAccountKey;
+    @Value("${google-analytic.scope}")
+    private String ga4Scope;
 
     private GoogleCredentials getGoogleCredentials() throws IOException {
         return GoogleCredentials.fromStream(new FileInputStream(serviceAccountKey))
-                .createScoped("https://www.googleapis.com/auth/analytics.readonly");
+                .createScoped(ga4Scope);
     }
 
     @Bean

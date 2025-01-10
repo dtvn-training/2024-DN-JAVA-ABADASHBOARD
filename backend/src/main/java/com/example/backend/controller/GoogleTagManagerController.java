@@ -15,7 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/google-tag-manager")
+@RequestMapping("/google-tag-manager1")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class GoogleTagManagerController {
@@ -29,7 +29,8 @@ public class GoogleTagManagerController {
             throw new ApiException(ErrorCode.BAD_REQUEST.getCode(), e.getMessage());
         }
     }
-        @GetMapping("/list-tag")
+
+    @GetMapping("/list-tag")
     public ApiResponse<PageResponse<TagResponse>> getListTag(
             @RequestParam(value = "page" , required = false , defaultValue = "1") int page,
             @RequestParam (value = "size" , required = false , defaultValue = "6") int size

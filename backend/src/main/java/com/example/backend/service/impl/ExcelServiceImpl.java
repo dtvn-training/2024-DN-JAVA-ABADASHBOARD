@@ -13,19 +13,37 @@ public class ExcelServiceImpl implements ExcelService {
 
     @Override
     public byte[] generateExcel() throws IOException {
-        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            Sheet sheet = workbook.createSheet("Data");
-            Row headerRow = sheet.createRow(0);
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Data");
 
-            Cell headerCell = headerRow.createCell(0);
-            headerCell.setCellValue("Header");
+        Row headerRow = sheet.createRow(0);
+        String[] headers = {"ID", "Name", "Email"};
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+            CellStyle style = workbook.createCellStyle();
+            Font font = workbook.createFont();
+            font.setBold(true);
+            style.setFont(font);
+            cell.setCellStyle(style);
+        }
 
-            Row dataRow = sheet.createRow(1);
-            Cell dataCell = dataRow.createCell(0);
-            dataCell.setCellValue("Sample Data");
+        String[][] data = {
+                {"1", "John Doe", "john.doe@example.com"},
+                {"2", "Jane Smith", "jane.smith@example.com"}
+        };
+        int rowIndex = 1;
+        for (String[] rowData : data) {
+            Row row = sheet.createRow(rowIndex++);
+            for (int i = 0; i < rowData.length; i++) {
+                row.createCell(i).setCellValue(rowData[i]);
+            }
+        }
 
-            workbook.write(out);
-            return out.toByteArray();
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            workbook.write(outputStream);
+            workbook.close();
+            return outputStream.toByteArray();
         }
     }
 }

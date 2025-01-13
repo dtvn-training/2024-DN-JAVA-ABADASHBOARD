@@ -11,14 +11,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.backend.dto.request.Tag.ListTagRequestGTM;
+import com.example.backend.dto.request.ListTagRequestGTM;
 import com.example.backend.dto.response.ApiResponse;
 import com.example.backend.dto.response.TagResponse;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/google-tag-manager")
+@RequestMapping("/google-tag-manager1")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j

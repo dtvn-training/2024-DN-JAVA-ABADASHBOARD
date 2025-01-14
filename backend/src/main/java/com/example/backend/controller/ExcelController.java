@@ -1,6 +1,7 @@
 package com.example.backend.controller;
 
 import com.example.backend.dto.DailyStatisticDTO;
+import com.example.backend.dto.PreviewDataDTO;
 import com.example.backend.dto.response.ApiResponse;
 import com.example.backend.dto.response.PageResponse;
 import com.example.backend.enums.ErrorCode;
@@ -28,18 +29,15 @@ public class ExcelController {
     private final ExcelService excelService;
 
     @GetMapping("/preview")
-    public ApiResponse<PageResponse<Map<String, List<DailyStatisticDTO>>>> getDataPreviewByFilter(
-            @RequestParam(value = "pageNum", defaultValue = "0") int pageNum,
-            @RequestParam(value = "pageSize", defaultValue = "6") int pageSize,
-            @RequestParam(value = "eventLabel", defaultValue = "eventName") String eventLabel,
+    public ApiResponse<List<PreviewDataDTO<List<DailyStatisticDTO>>>> getDataPreviewByFilter(
             @RequestParam(value = "startDate", defaultValue = "2024-12-01") String startDate,
             @RequestParam(value = "endDate", defaultValue = "2024-12-31") String endDate
     ) {
         try {
-            PageResponse<Map<String, List<DailyStatisticDTO>>> response = excelService.previewByFilter(
-                    startDate, endDate, pageNum, pageSize);
+            List<PreviewDataDTO<List<DailyStatisticDTO>>> response = excelService.previewByFilter(
+                    startDate, endDate);
 
-            return ApiResponse.<PageResponse<Map<String, List<DailyStatisticDTO>>>>builder()
+            return ApiResponse.<List<PreviewDataDTO<List<DailyStatisticDTO>>>>builder()
                     .code(HttpStatus.OK.value())
                     .message("success")
                     .data(response)
@@ -49,24 +47,4 @@ public class ExcelController {
         }
     }
 
-    @GetMapping("/download")
-    public ResponseEntity<byte[]> downloadExcel() {
-        try {
-            byte[] csvContent = excelService.generateExcel();
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=data.csv");
-            headers.add(HttpHeaders.CONTENT_TYPE, "text/csv");
-
-            return ResponseEntity
-                    .ok()
-                    .headers(headers)
-                    .body(csvContent);
-
-        } catch (IOException e) {
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .build();
-        }
-    }
 }

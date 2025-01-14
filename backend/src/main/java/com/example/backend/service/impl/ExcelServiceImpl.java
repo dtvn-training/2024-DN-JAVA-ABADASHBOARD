@@ -1,99 +1,95 @@
 package com.example.backend.service.impl;
 
-import com.example.backend.constant.AppConstant;
 import com.example.backend.dto.DailyStatisticDTO;
-import com.example.backend.dto.response.PageResponse;
+import com.example.backend.dto.PreviewDataDTO;
 import com.example.backend.repository.EventRepository;
+import com.example.backend.repository.PurchaseRevenueRepository;
 import com.example.backend.service.ExcelService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ExcelServiceImpl implements ExcelService {
 
     private final EventRepository eventRepository;
+    private final PurchaseRevenueRepository purchaseRevenueRepository;
+
 
     @Override
-    public byte[] generateExcel() throws IOException {
-        StringBuilder csvContent = new StringBuilder();
-        String[] headers = { "ID", "Name", "Email" };
-        csvContent.append(String.join(",", headers)).append("\n");
+    public List<PreviewDataDTO<List<DailyStatisticDTO>>> previewByFilter(String startDate, String endDate) {
+        List<PreviewDataDTO<List<DailyStatisticDTO>>> previewDataList = new ArrayList<>();
 
-        String[][] data = {
-                { "1", "John Doe", "john.doe@example.com" },
-                { "2", "Jane Smith", "jane.smith@example.com" }
-        };
+        // Add City Statistics
+        previewDataList.add(buildPreviewData(
+                "City Statistics",
+                Arrays.asList("DateEventOccurred", "City", "Value"),
+                eventRepository.findCityStatisticsByDateRange(startDate, endDate)
+        ));
 
-        for (String[] rowData : data) {
-            csvContent.append(String.join(",", rowData)).append("\n");
-        }
+        // Add Event Statistics
+        previewDataList.add(buildPreviewData(
+                "Event Statistics",
+                Arrays.asList("Date", "Event Name", "Value"),
+                eventRepository.findEventStatisticsByDateRange(startDate, endDate)
+        ));
 
-        return csvContent.toString().getBytes(StandardCharsets.UTF_8);
+        // Add Purchase Statistics
+        previewDataList.add(buildPreviewData(
+                "Purchase Statistics",
+                Arrays.asList("Day", "Event Name", "Value"),
+                eventRepository.findPurchaseStatisticsByDateRange(startDate, endDate)
+        ));
+
+        // Add Media Statistics
+        previewDataList.add(buildPreviewData(
+                "Event Distribution by Media Channels",
+                Arrays.asList("Media", "Event Count"),
+                eventRepository.findMediaStatisticsByDateRange(startDate, endDate)
+        ));
+
+        // Add Daily Event Trends (Event Name)
+        previewDataList.add(buildPreviewData(
+                "Daily Event Trends",
+                Arrays.asList("Day", "Event"),
+                eventRepository.findEventsByEventLabelAndTimestamp("eventName", startDate, endDate)
+        ));
+
+        // Add
+        previewDataList.add(buildPreviewData(
+                "Origin of purchases",
+                Arrays.asList("Media", "Count","TotalAmount($)"),
+                purchaseRevenueRepository.findPurchaseCountAndTotalAmountBySourceNative()
+        ));
+
+        return previewDataList;
     }
 
-    @Override
-    public PageResponse<Map<String, List<DailyStatisticDTO>>> previewByFilter(String startDate,
-                                                                              String endDate,
-                                                                              int pageNum,
-                                                                              int pageSize) {
-        Pageable pageable = PageRequest.of(pageNum, pageSize);
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(AppConstant.TIME_FORMAT);
-        LocalDate startDateRaw = LocalDate.parse(startDate, dateFormatter);
-        LocalDate endDateRaw = LocalDate.parse(endDate, dateFormatter);
-        LocalDateTime startDateNew = startDateRaw.atStartOfDay();
-        LocalDateTime endDateNew = endDateRaw.atTime(LocalTime.MAX);
+    private PreviewDataDTO<List<DailyStatisticDTO>> buildPreviewData(
+            String header,
+            List<String> categories,
+            List<Object[]> rawResults
+    ) {
+        // Map raw results into DailyStatisticDTO objects
+        List<DailyStatisticDTO> statistics = rawResults.stream()
+                .map(result -> {
+                    // Safely extract data from result array
+                    String day = result.length > 0 && result[0] != null ? result[0].toString() : null;
+                    String title = result.length > 1 && result[1] != null ? result[1].toString() : null;
+                    String value = result.length > 2 && result[2] != null ? result[2].toString() : null;
 
-        List<String> eventLabels = eventRepository.findDistinctEventLabels();
+                    return new DailyStatisticDTO(day, title, value);
+                })
+                .collect(Collectors.toList());
 
-        Map<String, List<DailyStatisticDTO>> allResults = new HashMap<>();
-        long totalElements = 0;
-        int totalPages = 0;
-
-        for (String label : eventLabels) {
-            Page<Object[]> rawResults = eventRepository.findEventsByEventLabelAndTimestampPaginated(
-                    label, startDateNew, endDateNew, pageable);
-
-            List<DailyStatisticDTO> getEventByDate = rawResults.getContent().stream()
-                    .map(result -> new DailyStatisticDTO(
-                            String.valueOf(((BigDecimal) result[0]).intValue()),
-                            ((BigDecimal) result[1]).toString()
-                    ))
-                    .toList();
-
-            allResults.put(label, getEventByDate);
-
-            if (totalElements == 0 && totalPages == 0) {
-                totalElements = rawResults.getTotalElements();
-                totalPages = rawResults.getTotalPages();
-            }
-        }
-
-        return PageResponse.<Map<String, List<DailyStatisticDTO>>>builder()
-                .currentPage(pageNum)
-                .totalPages(totalPages)
-                .pageSize(pageSize)
-                .totalElements(totalElements)
-                .data(Collections.singletonList(allResults))
+        // Build and return the PreviewDataDTO
+        return PreviewDataDTO.<List<DailyStatisticDTO>>builder()
+                .header(header)
+                .categories(categories)
+                .data(statistics)
                 .build();
     }
-
-
-
 }

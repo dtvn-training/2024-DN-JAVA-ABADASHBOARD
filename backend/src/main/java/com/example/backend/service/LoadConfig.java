@@ -1,4 +1,4 @@
-package com.example.backend.service.GoogleTagManagerService;
+package com.example.backend.service;
 
 import com.google.api.services.tagmanager.model.Container;
 import com.google.api.services.tagmanager.model.Workspace;

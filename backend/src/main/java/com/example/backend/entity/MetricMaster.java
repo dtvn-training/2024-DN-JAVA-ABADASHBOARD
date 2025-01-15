@@ -6,30 +6,30 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.Set;
+
 @Entity
-@Table(name = "db_variable")
+@Table(name = "db_metric_master")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Variable extends AbstractDefault {
+public class MetricMaster {
     @Id
-    @Column(name = "variable_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long variableId;
+    @Column(name = "metric_id")
+    Long metricId;
 
     @NotBlank(message = "NOT_BLANK")
-    @Column(name = "variable_name", nullable = false)
-    String variableName;
+    @Column(name = "metric_key", nullable = false)
+    private String metricKey;
 
     @NotNull(message = "NOT_NULL")
-    @Column(name = "value", nullable = false)
-    String value;
+    @Column(name = "name", nullable = false)
+    String name;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "user_id")
-    User user;
-
+    @ManyToMany(mappedBy = "metricMasters")
+    Set<DimensionMaster> dimensionMasters;
 }

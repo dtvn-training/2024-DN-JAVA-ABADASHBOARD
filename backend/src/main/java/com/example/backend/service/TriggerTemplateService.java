@@ -1,4 +1,4 @@
-package com.example.backend.service.GoogleTagManagerService;
+package com.example.backend.service;
 
 import com.example.backend.dto.response.PageResponse;
 import com.example.backend.dto.response.TriggerTemplateResponse;

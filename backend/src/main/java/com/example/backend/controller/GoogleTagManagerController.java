@@ -1,17 +1,19 @@
 package com.example.backend.controller;
 
 import com.example.backend.dto.request.CreateTagRequest;
+import com.example.backend.dto.request.CreateTriggerRequest;
 import com.example.backend.dto.response.ApiResponse;
 import com.example.backend.dto.response.PageResponse;
 import com.example.backend.dto.response.TagResponse;
 import com.example.backend.enums.ErrorCode;
 import com.example.backend.exception.ApiException;
-import com.example.backend.service.GoogleTagManagerService.TagService;
+import com.example.backend.service.TagService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,19 +25,28 @@ public class GoogleTagManagerController {
 
     @PostMapping("/create-tag")
     public ApiResponse<TagResponse> createTag(@Valid @RequestBody CreateTagRequest request) {
-        try{
+        try {
             return tagService.CreateTag(request);
-        }catch(Exception e){
+        } catch (Exception e) {
             throw new ApiException(ErrorCode.BAD_REQUEST.getCode(), e.getMessage());
         }
     }
-        @GetMapping("/list-tag")
-    public ApiResponse<PageResponse<TagResponse>> getListTag(
-            @RequestParam(value = "page" , required = false , defaultValue = "1") int page,
-            @RequestParam (value = "size" , required = false , defaultValue = "6") int size
-    ) {
+
+    @PostMapping("/create-trigger")
+    public ResponseEntity<?> createTrigger(@RequestBody CreateTriggerRequest request) {
         try {
-            PageResponse<TagResponse> tagResponses = tagService.listTags(page,size);
+            return tagService.createTrigger(request);
+        } catch (Exception e) {
+            throw new ApiException(ErrorCode.BAD_REQUEST.getCode(), e.getMessage());
+        }
+    }
+
+    @GetMapping("/list-tag")
+    public ApiResponse<PageResponse<TagResponse>> getListTag(
+            @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+            @RequestParam(value = "size", required = false, defaultValue = "6") int size) {
+        try {
+            PageResponse<TagResponse> tagResponses = tagService.listTags(page, size);
             return ApiResponse.<PageResponse<TagResponse>>builder()
                     .message("success")
                     .data(tagResponses)

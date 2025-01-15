@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -78,7 +80,6 @@ public class Tag extends AbstractDefault {
     )
     Set<ParameterMaster> parameterMasters;
 
-    @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH })
-    @JoinTable(name = "db_tag_trigger", joinColumns = @JoinColumn(name = "tag_id"), inverseJoinColumns = @JoinColumn(name = "trigger_id"))
-    Set<Trigger> triggers;
+    @OneToMany(mappedBy = "tag", cascade = CascadeType.ALL)
+    private Set<TagTrigger> tagTriggers = new HashSet<>();
 }

@@ -1,4 +1,4 @@
-package com.example.backend.service.GoogleTagManagerService.Impl;
+package com.example.backend.service.Impl;
 
 import com.example.backend.dto.response.PageResponse;
 import com.example.backend.dto.response.TriggerTemplateResponse;
@@ -6,7 +6,7 @@ import com.example.backend.entity.Tag;
 import com.example.backend.entity.TriggerTemplate;
 import com.example.backend.mapper.TriggerTemplateMapper;
 import com.example.backend.repository.TriggerTemplateRepository;
-import com.example.backend.service.GoogleTagManagerService.TriggerTemplateService;
+import com.example.backend.service.TriggerTemplateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

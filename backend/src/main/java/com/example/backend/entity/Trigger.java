@@ -25,7 +25,7 @@ public class Trigger extends AbstractDefault {
 
         @NotNull(message = "NOT_NULL")
         @Size(max = 255, message = "path cannot exceed 255 characters.")
-        @Column(name = "path", nullable = false)
+        @Column(name = "path")
         private String path;
 
         @NotNull(message = "NOT_NULL")
@@ -44,11 +44,11 @@ public class Trigger extends AbstractDefault {
         private String workspaceId;
 
         @Size(max = 20, message = "trigger gtm id cannot exceed 20 characters.")
-        @Column(name = "trigger_gtm_id", nullable = false)
+        @Column(name = "trigger_gtm_id")
         private String triggerGTMId;
 
         @NotBlank(message = "NOT_BLANK")
-        @Size(max = 20, message = "name cannot exceed 20 characters.")
+        @Size(max = 50, message = "name cannot exceed 20 characters.")
         @Column(name = "name", nullable = false)
         private String name;
 
@@ -73,8 +73,8 @@ public class Trigger extends AbstractDefault {
         @Column(name = "notes")
         private String notes;
 
-        @ManyToMany(mappedBy = "triggers")
-        Set<Tag> tags;
+        @OneToMany(mappedBy = "trigger", cascade = CascadeType.ALL)
+        private Set<TagTrigger> tagTriggers = new HashSet<>();
 
         @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
         @JoinTable(

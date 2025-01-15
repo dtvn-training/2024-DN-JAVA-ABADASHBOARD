@@ -83,7 +83,7 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
                                                  String campaignName) {
         try {
             Pageable pageable = PageRequest.of(pageNum, pageSize);
-            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(AppConstant.TIME_FORMAT);
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(AppConstant.TIME_FORMAT_YYYY_MM_DD);
             LocalDate startDateRaw = LocalDate.parse(startDate, dateFormatter);
             LocalDate endDateRaw = LocalDate.parse(endDate, dateFormatter);
             LocalDateTime startDateNew = startDateRaw.atStartOfDay();
@@ -107,7 +107,7 @@ public class GoogleAnalyticServiceImpl implements GoogleAnalyticService {
     public PageResponse<EventTableResponse> getEventByMedium(String mediumName, int pageNum, int pageSize, String eventLabel, String startDate, String endDate) {
         try {
             Pageable pageable = PageRequest.of(pageNum, pageSize);
-            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(AppConstant.TIME_FORMAT);
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(AppConstant.TIME_FORMAT_YYYY_MM_DD);
             LocalDate startDateRaw = LocalDate.parse(startDate, dateFormatter);
             LocalDate endDateRaw = LocalDate.parse(endDate, dateFormatter);
             LocalDateTime startDateNew = startDateRaw.atStartOfDay();

@@ -12,7 +12,7 @@ import com.example.backend.entity.Event;
 @Repository
 public interface EventRepository extends JpaRepository<Event, Long> {
 
-     // Finds events by event label and timestamp within a specified date range.
+    // Finds events by event label and timestamp within a specified date range.
     @Query(value = """
                 WITH date_series AS (
                     SELECT
@@ -33,17 +33,12 @@ public interface EventRepository extends JpaRepository<Event, Long> {
                     ds.nth_day = DATE(e.timestamp)
                     AND e.event_label = :eventLabel
                 WHERE
-                    ds.nth_day BETWEEN CAST(:startDate AS DATE) AND CAST(:endDate AS DATE)
+                    (:startDate != :endDate AND ds.nth_day BETWEEN CAST(:startDate AS DATE) AND CAST(:endDate AS DATE))
+                    OR (:startDate = :endDate AND DATE(e.timestamp) = CAST(:startDate AS DATE))
                 GROUP BY
                     ds.nth_day
                 ORDER BY
                     ds.nth_day
-            """, countQuery = """
-                SELECT COUNT(*) FROM generate_series(
-                    CAST(:startDate AS DATE),
-                    CAST(:endDate AS DATE),
-                    '1 day'::interval
-                ) AS nth_day
             """, nativeQuery = true)
     List<Object[]> findEventsByEventLabelAndTimestamp(
             @Param("eventLabel") String eventLabel,
@@ -51,7 +46,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             @Param("endDate") String endDate
     );
 
-     //Retrieves city statistics within a date range.
+    // Retrieves city statistics within a date range.
     @Query(value = """
             SELECT
                 DATE(timestamp) AS dateEventOccurred,
@@ -60,7 +55,8 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             FROM
                 db_event
             WHERE
-                timestamp BETWEEN CAST(:startDate AS TIMESTAMP) AND CAST(:endDate AS TIMESTAMP)
+                (:startDate != :endDate AND timestamp BETWEEN CAST(:startDate AS TIMESTAMP) AND CAST(:endDate AS TIMESTAMP))
+                OR (:startDate = :endDate AND DATE(timestamp) = CAST(:startDate AS DATE))
                 AND event_label = 'city'
             GROUP BY
                 DATE(timestamp), event_name
@@ -72,7 +68,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             @Param("endDate") String endDate
     );
 
-     // Retrieves event statistics by date range.
+    // Retrieves event statistics by date range.
     @Query(value = """
             SELECT
                 DATE(timestamp) AS dateEventOccurred,
@@ -81,7 +77,8 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             FROM
                 db_event
             WHERE
-                timestamp BETWEEN CAST(:startDate AS TIMESTAMP) AND CAST(:endDate AS TIMESTAMP)
+                (:startDate != :endDate AND timestamp BETWEEN CAST(:startDate AS TIMESTAMP) AND CAST(:endDate AS TIMESTAMP))
+                OR (:startDate = :endDate AND DATE(timestamp) = CAST(:startDate AS DATE))
                 AND event_label = 'eventName'
             GROUP BY
                 DATE(timestamp), event_name
@@ -93,7 +90,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             @Param("endDate") String endDate
     );
 
-     // Retrieves purchase statistics by date range.
+    // Retrieves purchase statistics by date range.
     @Query(value = """
         SELECT
             DATE(timestamp) AS dateEventOccurred,
@@ -102,7 +99,8 @@ public interface EventRepository extends JpaRepository<Event, Long> {
         FROM
             db_event
         WHERE
-            timestamp BETWEEN CAST(:startDate AS TIMESTAMP) AND CAST(:endDate AS TIMESTAMP)
+            (:startDate != :endDate AND timestamp BETWEEN CAST(:startDate AS TIMESTAMP) AND CAST(:endDate AS TIMESTAMP))
+            OR (:startDate = :endDate AND DATE(timestamp) = CAST(:startDate AS DATE))
             AND event_name = 'purchase'
         GROUP BY
             DATE(timestamp), event_name
@@ -114,21 +112,21 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             @Param("endDate") String endDate
     );
 
-
-     // Retrieves media statistics by date range.
+    // Retrieves media statistics by date range.
     @Query(value = """
         SELECT
             m.medium_name AS Media,
             SUM(CAST(e.event_value AS NUMERIC)) AS value
-        FROM 
+        FROM
             db_event e
-        JOIN 
+        JOIN
             db_medium m ON e.medium_id = m.medium_id
-        WHERE 
-            e.timestamp BETWEEN CAST(:startDate AS TIMESTAMP) AND CAST(:endDate AS TIMESTAMP)
-        GROUP BY 
+        WHERE
+            (:startDate != :endDate AND e.timestamp BETWEEN CAST(:startDate AS TIMESTAMP) AND CAST(:endDate AS TIMESTAMP))
+            OR (:startDate = :endDate AND DATE(e.timestamp) = CAST(:startDate AS DATE))
+        GROUP BY
             m.medium_name
-        ORDER BY 
+        ORDER BY
             m.medium_name
         """, nativeQuery = true)
     List<Object[]> findMediaStatisticsByDateRange(

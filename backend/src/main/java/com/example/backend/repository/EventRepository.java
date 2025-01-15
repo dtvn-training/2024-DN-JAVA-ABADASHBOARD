@@ -23,6 +23,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
                         ) AS nth_day
                 )
                 SELECT
+                     NULL as "stt",
                     EXTRACT(DAY FROM (ds.nth_day - CAST(:startDate AS DATE))) AS day,
                     COALESCE(SUM(CAST(e.event_value AS NUMERIC)), 0) AS value
                 FROM
@@ -115,6 +116,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     // Retrieves media statistics by date range.
     @Query(value = """
         SELECT
+            NULL as "stt",
             m.medium_name AS Media,
             SUM(CAST(e.event_value AS NUMERIC)) AS value
         FROM
